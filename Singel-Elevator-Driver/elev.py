@@ -63,8 +63,16 @@ class Elevator:
 		#	raise NonexistentButton("NonexistentButton")
 
 	def setMotorDirection(self, dir):
-		assert(dir in MOTOR_DIRECTION), "ERR: Invalid motor direction!"
-		io.writeAnalog(MOTOR, dir)
+		# assert(0 <= dir <= 2), "ERR: Invalid motor direction!"
+		# io.writeAnalog(MOTOR, dir)
+		if(dir == OUTPUT.MOTOR_UP):
+			self.setSpeed(300)
+		elif(dir == OUTPUT.MOTOR_DOWN):
+			self.setSpeed(-300)
+		elif(dir == OUTPUT.MOTOR_STOP):
+			self.setSpeed(0)
+
+
 
 	def setFloorIndicator(self, floor):
 		assert(floor >= 0), "ERR_ floor < 0"
@@ -121,3 +129,17 @@ class Elevator:
 				if self.getButtonSignal(buttonType, floor) == 1:
 					#print "buttonType: {}\t floor: {}\t bool: {}".format(buttonType, floor, self.getButtonSignal(buttonType,floor))
 					self.setButtonLamp(floor, buttonType, 1)
+
+
+	#useless?
+	def reverseElevDirection(self):
+		if(self.direction == OUTPUT.MOTOR_DOWN):
+			self.direction = OUTPUT.MOTOR_UP
+		elif(self.direction == OUTPUT.MOTOR_UP):
+			self.direction = OUTPUT.MOTOR_DOWN
+		else:
+			pass
+		print "Direction Reversed"
+
+
+

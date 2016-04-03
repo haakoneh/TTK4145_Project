@@ -65,7 +65,7 @@ class OUTPUT:
 
     MOTOR_UP       = 0
     MOTOR_DOWN     = 1
-    # MOTOR_STOP     = 2
+    MOTOR_STOP     = 2
 
     
     UP_LIGHTS      = [LIGHT_UP1, LIGHT_UP2, LIGHT_UP3, LIGHT_UP4]

@@ -4,7 +4,10 @@
 from elev import Elevator
 from IO import io
 from channels import INPUT, OUTPUT
-requestList = []
+
+
+buttonIndex = 0
+floorIndex = 1
 
 class Elevator_Panel:
 	def __init__(self, elevator):
