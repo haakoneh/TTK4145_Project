@@ -26,6 +26,26 @@ class Request_List:
 		else:
 			return 0
 
+	def noRequests(self):
+		if not self.list:
+			return 1
+		else
+			return 0
+
+	def isRequestAtFloor(self, floor):
+		if self.elevator.direction == OUTPUT.MOTOR_UP:
+			buttonType = 0 
+		else if self.elevator.direction == OUTPUT.MOTOR_DOWN:
+			buttonType = 1
+		else:
+			buttonType = 2
+
+		request = [buttonType, floor]
+		if request in self.list:
+			return 1
+		else:
+			return 0
+
 	def requestCost(self, request):
 		pass
 
@@ -34,3 +54,5 @@ class Request_List:
 		for request in self.list:
 			print("Floor: {}\tbuttonType: {}\tBool: {}").format(request[1], request[0], request[2])
 			#print request #requestList[index]
+	
+	
