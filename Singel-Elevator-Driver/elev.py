@@ -1,10 +1,14 @@
 from IO import io
 from channels import INPUT, OUTPUT
 from time import sleep
+<<<<<<< HEAD
 #from elev_panel import Elevator_Panel
 
 #move these to channels
 from erlendMacros import *
+=======
+from elev_panel import Elevator_Panel
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
 
 
 class Elevator:
@@ -13,15 +17,21 @@ class Elevator:
 		self.direction = OUTPUT.MOTOR_DOWN
 		self.NUM_FLOORS = INPUT.NUM_FLOORS
 		self.current_floor = -1
+<<<<<<< HEAD
 		self.previous_floor = -1
+=======
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
 
 		for light in OUTPUT.LIGHTS:
 			if light != -1:
 				io.setBit(light, 0)
 
+<<<<<<< HEAD
 		print "Elev setup"
 
 
+=======
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
 	def setSpeed(self, speed):
 		if speed > 0:
 			self.direction = OUTPUT.MOTOR_UP
@@ -44,12 +54,17 @@ class Elevator:
 		sleep(0.02)
 		io.writeAnalog(OUTPUT.MOTOR, 2048)
 
+<<<<<<< HEAD
 	def setButtonLamp(self, buttonType, floor, value):
+=======
+	def setButtonLamp(self, floor, buttonType, value):
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
 		assert(floor >= 0), "ERR_ floor < 0"
 		assert(floor < self.NUM_FLOORS), "ERR_ floor > NUM_FLOORS"
 		assert(buttonType >= 0), "ERR_ buttonType < 0"
 		assert(buttonType < self.NUM_FLOORS - 1), "ERR_ buttonType > NUM_FLOORS"
 
+<<<<<<< HEAD
 		#catch hightest level up and lowest level down
 
 		if (OUTPUT.FLOOR_ORDER_LIGHTS[floor][buttonType] == -1):
@@ -60,6 +75,9 @@ class Elevator:
 		#	io.setBit(OUTPUT.FLOOR_ORDER_LIGHTS[floor][buttonType], value)
 		#except ((buttonType == UP and floor == NUM_FLOORS - 1) or (buttonType == DOWN and floor == 0)):
 		#	raise NonexistentButton("NonexistentButton")
+=======
+		io.setBit(INPUT.BUTTON_FLOORS[floor][buttonType], value)
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
 
 	def setMotorDirection(self, dir):
 		assert(dir in MOTOR_DIRECTION), "ERR: Invalid motor direction!"
@@ -83,10 +101,13 @@ class Elevator:
 	def getButtonSignal(self, button, floor):
 		assert(floor >= 0)
 		assert(floor < self.NUM_FLOORS)
+<<<<<<< HEAD
 		
 		if INPUT.BUTTON_FLOORS[floor][button] == -1:
 			return -1
 
+=======
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
 		if(io.readBit(INPUT.BUTTON_FLOORS[floor][button])):
 			return 1
 		
@@ -115,8 +136,15 @@ class Elevator:
 
 
 	def checkFloorButtons(self):
+<<<<<<< HEAD
 		for floor in range(self.NUM_FLOORS):
 			for buttonType in range(3):
 				if self.getButtonSignal(buttonType, floor) == 1:
 					#print "buttonType: {}\t floor: {}\t bool: {}".format(buttonType, floor, self.getButtonSignal(buttonType,floor))
 					self.setButtonLamp(floor, buttonType, 1)
+=======
+		for floor in xrange(0,self.NUM_FLOORS):
+			for buttonType in xrange(1,3):
+				if getButtonSignal(buttonType, floor):
+					setButtonLamp(floor, buttonType, 1)
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44

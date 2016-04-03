@@ -73,6 +73,7 @@ class OUTPUT:
     FLOOR_LIGHTS   = [FLOOR_IND1, FLOOR_IND2]
     LIGHTS         = UP_LIGHTS + DOWN_LIGHTS
 
+<<<<<<< HEAD
     FLOOR_ORDER_LIGHTS = [  [UP_LIGHTS[0], DOWN_LIGHTS[0], COMMAND_LIGHTS[0]],
                             [UP_LIGHTS[1], DOWN_LIGHTS[1], COMMAND_LIGHTS[1]],
                             [UP_LIGHTS[2], DOWN_LIGHTS[2], COMMAND_LIGHTS[2]],
@@ -82,3 +83,6 @@ class OUTPUT:
 
     
 
+=======
+    ALL            = LIGHTS + [MOTOR, MOTORDIR]
+>>>>>>> 6265a410603b5cc2f5fee66c9c51c1e3b927fa44
