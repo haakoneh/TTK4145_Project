@@ -21,6 +21,11 @@ class Elevator:
 
 		print "Elev setup"
 
+	def getCurrentFloor(self):
+		return self.current_floor
+
+	def setCurrentFloor(self, floor):
+		self.current_floor = floor
 
 	def setSpeed(self, speed):
 		if speed > 0:
@@ -72,6 +77,15 @@ class Elevator:
 		elif(dir == OUTPUT.MOTOR_STOP):
 			self.setSpeed(0)
 
+	def reverseElevDirection(self):
+		if(self.direction == OUTPUT.MOTOR_DOWN):
+			self.setMotorDirection(OUTPUT.MOTOR_UP)
+		elif(self.direction == OUTPUT.MOTOR_UP):
+			self.setMotorDirection(OUTPUT.MOTOR_DOWN)
+		else:
+			pass
+		print "Direction Reversed"
+
 
 
 	def setFloorIndicator(self, floor):
@@ -107,7 +121,7 @@ class Elevator:
 		for index, sensor in enumerate(INPUT.SENSORS):
 			if io.readBit(sensor):
 				self.current_floor = index
-				return self.current_floor
+				return index
 
 		return -1
  
@@ -130,16 +144,8 @@ class Elevator:
 					#print "buttonType: {}\t floor: {}\t bool: {}".format(buttonType, floor, self.getButtonSignal(buttonType,floor))
 					self.setButtonLamp(floor, buttonType, 1)
 
-
-	#useless?
-	def reverseElevDirection(self):
-		if(self.direction == OUTPUT.MOTOR_DOWN):
-			self.direction = OUTPUT.MOTOR_UP
-		elif(self.direction == OUTPUT.MOTOR_UP):
-			self.direction = OUTPUT.MOTOR_DOWN
+	def  checkEndPoints(self):
+		if self.getFloorSensorSignal() == 0 or self.getFloorSensorSignal() == INPUT.NUM_FLOORS - 1:
+			return 1
 		else:
-			pass
-		print "Direction Reversed"
-
-
-
+			return 0

@@ -34,9 +34,17 @@ class INPUT:
 
     SENSORS        = [SENSOR1, SENSOR2, SENSOR3, SENSOR4]
 
+
+    BUTTON_UP       = 0
+    BUTTON_DOWN     = 1
+    BUTTON_IN       = 2
+
+    BUTTON_TYPES = [BUTTON_UP, BUTTON_DOWN, BUTTON_IN]
+
     ALL            = BUTTONS + SENSORS + [OBSTRUCTION]
 
-    NUM_FLOORS     = len(SENSORS)
+    NUM_FLOORS        = len(SENSORS)
+    NUM_FLOOR_BUTTONS = 3
 
 class OUTPUT:
     PORT3          = 3
