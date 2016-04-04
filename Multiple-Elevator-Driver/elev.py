@@ -141,11 +141,11 @@ class Elevator:
 		for floor in range(self.NUM_FLOORS):
 			for buttonType in range(3):
 				if self.getButtonSignal(buttonType, floor) == 1:
-					#print "buttonType: {}\t floor: {}\t bool: {}".format(buttonType, floor, self.getButtonSignal(buttonType,floor))
 					self.setButtonLamp(floor, buttonType, 1)
 
 	def  checkEndPoints(self):
-		if self.getFloorSensorSignal() == 0 or self.getFloorSensorSignal() == INPUT.NUM_FLOORS - 1:
+		floorCheck = 
+		if not  self.getFloorSensorSignal() == 0 or self.getFloorSensorSignal() == INPUT.NUM_FLOORS - 1:
 			return 1
 		else:
 			return 0
