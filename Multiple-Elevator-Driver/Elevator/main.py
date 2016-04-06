@@ -69,25 +69,25 @@ def main():
 		if(elev.getFloorSensorSignal() != -1):
 			if(elev.getFloorSensorSignal() != currentFloor):	
 				current_floor = elev.getFloorSensorSignal()
-				elev.setFloorIndicator(elev.getFloorSensorSignal())
+				elev.setCurrentFloor(current_floor)
 				
 			if req_list.isRequestsatFloor(elev.current_floor):
 				if(req_list.isRequestAtFloorAndDirection(elev.current_floor)):
-					print "Correct direction and floor"
 					req_list.removeRequestsForDirection(elev.current_floor)
 					openDoor(floor_timer, elev)
 
-				elif elev.checkEndPoints():
-					print "At end point"					
+				elif len(req_list.list) == 1:
 					req_list.removeRequestsAtFloor(elev.current_floor)
 					openDoor(floor_timer, elev)
-					
-				#This if cluster controlls direction
+
+				elif elev.checkEndPoints():		
+					req_list.removeRequestsAtFloor(elev.current_floor)
+					openDoor(floor_timer, elev)
 
 		if elev.getStopSignal():
 		 	elev.stop()
 		 	break
 
-		#time.sleep(0.01)
+		time.sleep(0.01)
 
 main()

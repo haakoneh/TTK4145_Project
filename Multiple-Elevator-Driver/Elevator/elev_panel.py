@@ -1,5 +1,5 @@
-from elev import Elevator
-from channels import INPUT, OUTPU
+#from elev import Elevator
+#from channels import INPUT, OUTPU
 
 
 class Elevator_Panel:

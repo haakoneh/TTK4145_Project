@@ -1,13 +1,6 @@
-
-
-
 from elev import Elevator
 from IO import io
 from channels import INPUT, OUTPUT
-
-
-#buttonIndex = 0
-#floorIndex = 1
 
 class Elevator_Panel:
 	def __init__(self, elevator):
@@ -26,6 +19,8 @@ class Elevator_Panel:
 
 
 	def updateLightsByRequestList(self, requestList):
+		# print requestList
+
 		if not requestList:
 			self.turnOffAllLights()
 		

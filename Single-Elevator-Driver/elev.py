@@ -4,7 +4,6 @@ from time import sleep
 #from elev_panel import Elevator_Panel
 
 #move these to channels
-from erlendMacros import *
 
 
 class Elevator:
@@ -42,12 +41,17 @@ class Elevator:
 	def stop(self):
 		if not self.moving:
 			return
+		#io.setBit(OUTPUT.MOTORDIR, OUTPUT.MOTOR_STOP)
+		sleep(0.1)
 		if self.direction is OUTPUT.MOTOR_DOWN:
 			io.setBit(OUTPUT.MOTORDIR, OUTPUT.MOTOR_UP)
+			#io.writeAnalog(OUTPUT.MOTOR, 2048+abs(300))
 		else:
 			io.setBit(OUTPUT.MOTORDIR, OUTPUT.MOTOR_DOWN)
+			#io.writeAnalog(OUTPUT.MOTOR, 2048+abs(300))
+		#self.reverseElevDirection()
 		self.moving = False
-		sleep(0.02)
+		sleep(0.015)
 		io.writeAnalog(OUTPUT.MOTOR, 2048)
 
 	def setButtonLamp(self, buttonType, floor, value):
@@ -84,7 +88,7 @@ class Elevator:
 			self.setMotorDirection(OUTPUT.MOTOR_DOWN)
 		else:
 			pass
-		print "Direction Reversed"
+		#print "Direction Reversed"
 
 
 
@@ -145,7 +149,7 @@ class Elevator:
 
 	def  checkEndPoints(self):
 		floorCheck = self.getFloorSensorSignal()
-		if floorCheck == 0 or floorCheck == INPUT.NUM_FLOORS - 1:
+		if not 0 < floorCheck < INPUT.NUM_FLOORS - 1:
 			return 1
 		else:
 			return 0

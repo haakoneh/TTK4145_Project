@@ -50,7 +50,6 @@ def main():
 				time.sleep(0.1)
 				continue
 
-		#This if cluster controlls direction
 		#more requests ahead
 		if req_list.requestsAhead():
 			elev.setMotorDirection(elev.direction)
@@ -58,12 +57,13 @@ def main():
 		#there are requests, but not ahead
 		elif req_list.isRequests():
 			elev.reverseElevDirection()
-		
+
 		#no orders
 		else:
 			if(elev.getFloorSensorSignal() != -1):
 				elev.setMotorDirection(OUTPUT.MOTOR_STOP)
 				elev.current_floor = elev.getFloorSensorSignal()
+
 
 		#we're at a floor, we check if we should stop here
 		if(elev.getFloorSensorSignal() != -1):
@@ -73,18 +73,21 @@ def main():
 				
 			if req_list.isRequestsatFloor(elev.current_floor):
 				if(req_list.isRequestAtFloorAndDirection(elev.current_floor)):
+					print "Correct direction and floor"
 					req_list.removeRequestsForDirection(elev.current_floor)
 					openDoor(floor_timer, elev)
 
-				elif elev.checkEndPoints():					
+				elif elev.checkEndPoints():
+					print "At end point"					
 					req_list.removeRequestsAtFloor(elev.current_floor)
 					openDoor(floor_timer, elev)
 					
+				#This if cluster controlls direction
 
 		if elev.getStopSignal():
 		 	elev.stop()
 		 	break
 
-		time.sleep(0.01)
+		#time.sleep(0.01)
 
 main()

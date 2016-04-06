@@ -11,10 +11,11 @@ class Timer:
 
 	def isTimeOut(self, seconds):
 		timeDifference = datetime.now() - self.time
-		if(timeDifference.seconds > seconds):
+		if(timeDifference.seconds >= seconds):
 			self.flag = 0
 			return 1
 		else:
 			return 0
+	
 	def getTimeFlag(self):
 		return self.flag
