@@ -144,8 +144,8 @@ class Elevator:
 					self.setButtonLamp(floor, buttonType, 1)
 
 	def  checkEndPoints(self):
-		floorCheck = 
-		if not  self.getFloorSensorSignal() == 0 or self.getFloorSensorSignal() == INPUT.NUM_FLOORS - 1:
+		floorCheck = self.getFloorSensorSignal()
+		if not  floorCheck == 0 or floorCheck == INPUT.NUM_FLOORS - 1:
 			return 1
 		else:
 			return 0

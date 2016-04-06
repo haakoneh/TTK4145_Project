@@ -1,18 +1,17 @@
-
 from elev import Elevator
 from channels import INPUT, OUTPUT
-from erlendMacros import *
-import time
 
-buttonIndex = 0
-floorIndex = 1
+import time
 
 class Request_List:
 	def __init__(self, elevator):
 		self.list = []
 		self.elevator = elevator
+		self.file = 'requestListFile.txt'
+		self.readRequestFile()
 
 	def addRequest(self):
+		"""Adds request if it does not alredy exist in list"""
 		for floor in range(INPUT.NUM_FLOORS):
 			for buttonType in range(3):
 				if self.elevator.getButtonSignal(buttonType, floor) == 1:
@@ -22,10 +21,32 @@ class Request_List:
 						self.list.append(request)
 						self.printRequestList()
 
+		self.updateRequestFile()
+
+	def readRequestFile(self):
+		"""Reads from file during initialization, only copies orders from inside elevator"""
+		with open(self.file, 'r') as f:
+			string_list = [line.rstrip('\n') for line in f]
+		
+
+		for string in string_list:
+			request = map(int, string[1:-1].split(','))
+			if request[0] == INPUT.BUTTON_IN:
+				self.list.append(request)
+
+
+	def updateRequestFile(self):
+		"""Updates file whenever the request list is changed"""
+		with open(self.file, 'w') as f:
+		    for s in self.list:
+		        f.write(str(s) + '\n')	
+
 	def removeRequest(self, floor, buttonType):
+		""""""
 		request = [buttonType, floor]
 		if request in self.list:
 			self.list.remove(request)
+			self.updateRequestFile()
 			return 1
 		else:
 			return 0
@@ -41,31 +62,23 @@ class Request_List:
 		
 		if request in self.list:
 			self.list.remove(request)
+			self.updateRequestFile()
 			return 1
+
 		elif request_in in self.list:
 			self.list.remove(request_in)
+			self.updateRequestFile()
 			return 1
-		else:
-			return 0
-			
+
+		else:			return 0	
 
 	def removeRequestsAtFloor(self, floor):
 		for buttonType in INPUT.BUTTON_TYPES:
 			self.removeRequest(floor, buttonType)
 
-
-	def noRequests(self):
-		if not self.list:
-			return 1
-		else:
-			return 0
-
 	def isRequests(self):
-		if not self.list:
-			return 0
-		else:
-			return 1
-
+		if self.list:	return 1
+		else:			return 0
 
 	def isRequestsatFloor(self, floor):
 		for buttonType in INPUT.BUTTON_TYPES:
@@ -73,72 +86,50 @@ class Request_List:
 			if request in self.list:
 				return 1
 		return 0
-		
-		
 
-
-	#renamed from isRequestAtFloor to:isRequestAtFloorAndDirection by Erlend
 	def isRequestAtFloorAndDirection(self, floor):
 
 		if self.elevator.direction == OUTPUT.MOTOR_UP:
 			buttonType = INPUT.BUTTON_UP
 		elif self.elevator.direction == OUTPUT.MOTOR_DOWN:
 			buttonType = INPUT.BUTTON_DOWN
-		
-
+	
 		request    = [buttonType, floor]
 		request_in = [INPUT.BUTTON_IN, floor]
 		
 		if request in self.list or request_in in self.list:
 			return 1
-		else:
-			return 0
-
-
+		
+		else:			return 0
 
 	def requestCost(self, request):
 		pass
 
 	def printRequestList(self):
-		print "\n"
 		for request in self.list:
-			#print("Floor: {}\tbuttonType: {}\tBool: {}").format(request[1], request[0], request[2])
-			#print request #requestList[index]
 			print request
 	
-	
-	#checks if there are orders beyond current point in current direction
-	#for starters, this returns true no matter what kind of command is issued in the request
-
 	def requestsAtFloor(self, floor):
 		for request in self.list:
-					if request[floorIndex] == floor:
-						return True
-					else:
-						return False
-
+			if request[floorIndex] == floor:
+				return True
+			else:
+				return False
 
 	def	requestsAhead(self):
 		if(self.elevator.direction == OUTPUT.MOTOR_DOWN):
 			for floor in range(0, self.elevator.current_floor):
 				if self.isRequestsatFloor(floor):
-					return True
+					return 1
 
-			return False
+			return 0
 
 		elif(self.elevator.direction == OUTPUT.MOTOR_UP):
 			for floor in range (self.elevator.current_floor, INPUT.NUM_FLOORS):
 				if self.isRequestsatFloor(floor):
-					return True
+					return 1
 
-			return False
+			return 0
 		#elevator has no direction
 		else:
 			print "requestsAhead called without direction"
-
-
-
-
-	#might be unnecessary
-	def requestsBehind(self):
-		return True
