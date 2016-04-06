@@ -17,10 +17,7 @@ class Elevator_Panel:
 	def turnOffRequestLight(self, floor, buttonType):
 		self.elevator.setButtonLamp(buttonType, floor, 0)
 
-
 	def updateLightsByRequestList(self, requestList):
-		# print requestList
-
 		if not requestList:
 			self.turnOffAllLights()
 		

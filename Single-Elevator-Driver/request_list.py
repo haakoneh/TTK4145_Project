@@ -94,13 +94,14 @@ class Request_List:
 		elif self.elevator.direction == OUTPUT.MOTOR_DOWN:
 			buttonType = INPUT.BUTTON_DOWN
 	
-		request    = [buttonType, floor]
-		request_in = [INPUT.BUTTON_IN, floor]
+		request    = [buttonType, 		floor]
+		request_in = [INPUT.BUTTON_IN, 	floor]
 		
 		if request in self.list or request_in in self.list:
 			return 1
 		
-		else:			return 0
+		else:			
+			return 0
 
 	def requestCost(self, request):
 		pass
@@ -133,3 +134,7 @@ class Request_List:
 		#elevator has no direction
 		else:
 			print "requestsAhead called without direction"
+
+	def opositeDirectionAndLast(self):
+		if self.elevator.direction == OUTPUT.MOTOR_UP :
+			pass

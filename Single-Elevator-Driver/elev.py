@@ -1,7 +1,7 @@
 from IO import io
 from channels import INPUT, OUTPUT
 from time import sleep
-#from elev_panel import Elevator_Panel
+from elev_panel import Elevator_Panel
 
 #move these to channels
 
@@ -41,17 +41,15 @@ class Elevator:
 	def stop(self):
 		if not self.moving:
 			return
-		#io.setBit(OUTPUT.MOTORDIR, OUTPUT.MOTOR_STOP)
+
+		self.moving = False
 		sleep(0.1)
 		if self.direction is OUTPUT.MOTOR_DOWN:
 			io.setBit(OUTPUT.MOTORDIR, OUTPUT.MOTOR_UP)
-			#io.writeAnalog(OUTPUT.MOTOR, 2048+abs(300))
 		else:
 			io.setBit(OUTPUT.MOTORDIR, OUTPUT.MOTOR_DOWN)
-			#io.writeAnalog(OUTPUT.MOTOR, 2048+abs(300))
-		#self.reverseElevDirection()
-		self.moving = False
-		sleep(0.015)
+
+		sleep(0.01)
 		io.writeAnalog(OUTPUT.MOTOR, 2048)
 
 	def setButtonLamp(self, buttonType, floor, value):
@@ -60,20 +58,12 @@ class Elevator:
 		assert(buttonType >= 0), "ERR_ buttonType < 0"
 		assert(buttonType < self.NUM_FLOORS - 1), "ERR_ buttonType > NUM_FLOORS"
 
-		#catch hightest level up and lowest level down
-
 		if (OUTPUT.FLOOR_ORDER_LIGHTS[floor][buttonType] == -1):
 			print "Button light does not exist"
 		else:
 			io.setBit(OUTPUT.FLOOR_ORDER_LIGHTS[floor][buttonType], value)
-		#try:
-		#	io.setBit(OUTPUT.FLOOR_ORDER_LIGHTS[floor][buttonType], value)
-		#except ((buttonType == UP and floor == NUM_FLOORS - 1) or (buttonType == DOWN and floor == 0)):
-		#	raise NonexistentButton("NonexistentButton")
 
 	def setMotorDirection(self, dir):
-		# assert(0 <= dir <= 2), "ERR: Invalid motor direction!"
-		# io.writeAnalog(MOTOR, dir)
 		if(dir == OUTPUT.MOTOR_UP):
 			self.setSpeed(300)
 		elif(dir == OUTPUT.MOTOR_DOWN):
@@ -88,9 +78,6 @@ class Elevator:
 			self.setMotorDirection(OUTPUT.MOTOR_DOWN)
 		else:
 			pass
-		#print "Direction Reversed"
-
-
 
 	def setFloorIndicator(self, floor):
 		assert(floor >= 0), "ERR_ floor < 0"

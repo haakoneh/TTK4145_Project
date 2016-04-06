@@ -13,16 +13,17 @@ class LinkNode():
 
 		self.nodeNr = 0		#this is changed unless this is the first active node
 		self.IP = getMyIP()
-		self.udpPort = 30000
+		self.udpPort = 54545
 		self.tcpPort = 50001
 
 		#self.tcpSocket = socket.socket(AF_INET, SOCK_STREAM)
 
 		self.broadcastSock = socket.socket(AF_INET, SOCK_DGRAM)
+		self.broadcastSock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 		self.broadcastSock.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
 
 		self.udpRecvSock = socket.socket(AF_INET, SOCK_DGRAM)
-		self.udpRecvSock.bind(("", self.udpPort))
+		self.udpRecvSock.bind(('', self.udpPort))
 
 
 
@@ -38,6 +39,7 @@ class LinkNode():
 
 			if(recvMsg == "seekingConnections"):
 				if(addr[0] == self.IP):
+					print self.IP
 					pass
 				else:
 					print "Recieved: {}\tFrom: {}".format(recvMsg, addr)
@@ -50,6 +52,8 @@ class LinkNode():
 			elif(recvMsg == "alreadyLinked"):
 				enterLinkNetwork()
 				return
+			else:
+				print "Unknown msg recieved: " + recvMsg
 
 			time.sleep(1)
 
@@ -69,7 +73,7 @@ class LinkNode():
 		pass
 
 	def broadcast(self, msg):
-		self.broadcastSock.sendto(msg, ('<broadcast>', self.udpPort))
+		self.broadcastSock.sendto(msg, ('255.255.255.255', self.udpPort))
 
 	def run(self):
 		pass
