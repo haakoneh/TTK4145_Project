@@ -23,7 +23,7 @@ class MessageEncoder():
         return stateString
     
     def encode_request(self, payload):
-        pass
+        return ''.join(str(e) for e in payload)
     
     def encode_elev_id(self, payload):
         pass
