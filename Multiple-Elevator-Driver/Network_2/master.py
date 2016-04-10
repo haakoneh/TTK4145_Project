@@ -1,4 +1,6 @@
 #master.py
+#import thread
+import threading
 from masterMeetSlave import *
 
 statelist = []
@@ -23,5 +25,11 @@ statelist = []
 #startup: look for other masters first
 seeker = MasterSlaveSeeker()
 
+if(seeker.findMaster()):
+	#continue as slave
+	
 
-seeker.findMaster()
+seekerThread = threading.Thread(target = seeker.replyToSlaves)
+seekerThread.start()
+
+# seeker.replyToSlaves()
