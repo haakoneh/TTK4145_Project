@@ -1,24 +1,27 @@
 #master.py
+from masterMeetSlave import *
 
+statelist = []
 
 
 #--------main purpose-------
 
-settup server
+# settup server
 
-start elevator
+# start elevator
+# thread UDP_listenforBroadcast
 
-refresh elevator states and order queue
+# refresh elevator states and order queue
 
-for orders in queue:
-	elevator = findOptimalElevator(elevStateList, request)
+# for orders in queue:
+# 	elevator = findOptimalElevator(elevStateList, request)
 
-send(order, elevator)
-
-
-
-
-
-
+# send(order, elevator)
 
 #---------------------------
+
+#startup: look for other masters first
+seeker = MasterSlaveSeeker()
+
+
+seeker.findMaster()
