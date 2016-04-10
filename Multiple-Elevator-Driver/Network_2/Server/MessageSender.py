@@ -7,5 +7,6 @@ class MessageSender:
 		self.encoder = MessageEncoder()
 
 	def sendMessage(self, msgType, payload):
-			data = json.dumps(self.encoder.encode(msgType, payload))
-			self.connection.send(data)
+		content = self.encoder.encode(msgType, payload)
+		data = {'msgType': msgType, 'content': content}
+		self.connection.send(json.dumps(data))

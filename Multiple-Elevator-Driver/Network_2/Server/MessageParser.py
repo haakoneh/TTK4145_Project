@@ -27,27 +27,33 @@ class MessageParser():
             'elev_id': self.parse_elev_id, 
             'error': self.parse_error,
             'info': self.parse_info,
-            'udp_response': self.udp_response,
+            'udp': self.parse_udp,
 	    # More key:values pairs are needed	
         }
 
     def parse(self, payload):
         payload = json.loads(payload) # decode the JSON object
 
-        if payload['response'] in self.possible_responses:
-            return self.possible_responses[payload['response']](payload)
+        if payload['msgType'] in self.possible_responses:
+            return self.possible_responses[payload['msgType']](payload)
         else:
             print 'Msg not valid!'
             # Response not valid
 
-    def udp_response(self, payload):
-        return payload['content']
+    def parse_udp(self, payload):
+        return payload['content'].split(' ')
 
     def parse_states(self, payload):
-        pass
+        state_temp = map(int, payload['content'].split(' '))
+
+        state_list= [] 
+        for i in xrange(0, len(state_temp), 2):
+        	state_list.append([state_temp[i], state_temp[i+1]])
+        return state_list
+
 
     def parse_request(self, payload):
-        pass
+        return map(int, payload['content'].split(' '))
 
     def parse_elev_id(self, payload):
         pass
@@ -59,3 +65,12 @@ class MessageParser():
         pass
     
     # Include more methods for handling the different responses... 
+parser = MessageParser()
+
+string = "0 1 2 3"
+
+data = {'msgType': 'states', 'content': string}
+
+print parser.parse(json.dumps(data))
+
+
