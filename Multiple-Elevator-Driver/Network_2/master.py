@@ -1,7 +1,16 @@
 #master.py
 #import thread
 import threading
+import sys
 from masterMeetSlave import *
+from runPythonScript import *
+#import imp
+#NetworkMaster = imp.load_source('NetworkMaster', 'Server/NetworkMaster.py')
+
+sys.path.append('Server/')
+
+import NetworkMaster
+
 
 statelist = []
 
@@ -23,13 +32,11 @@ statelist = []
 #---------------------------
 
 #startup: look for other masters first
-seeker = MasterSlaveSeeker()
+def run():
+	seeker = MasterSlaveSeeker()
 
-if(seeker.findMaster()):
-	#continue as slave
-	
+	seekerThread = threading.Thread(target = seeker.replyToSlaves)
+	seekerThread.start()
 
-seekerThread = threading.Thread(target = seeker.replyToSlaves)
-seekerThread.start()
+	NetworkMaster.starter()
 
-# seeker.replyToSlaves()

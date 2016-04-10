@@ -151,7 +151,7 @@ def ban():
 			except:
 				print 'Not a user'
 
-if __name__ == "__main__":
+def run():
 	"""
 	This is the main method and is executed when you type "python Server.py"
 	in your terminal.

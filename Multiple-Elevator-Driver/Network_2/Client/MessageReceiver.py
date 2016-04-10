@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
 import json
+import socket
 
 class MessageReceiver(Thread):
 	"""
@@ -18,21 +19,23 @@ class MessageReceiver(Thread):
 		while True:
 			try:
 				data = self.connection.recv(4096)
-			except:
+			except socket.timeout:
 				print 'Connection lost'
 				break
-			try:
-				jsonObject = json.loads(data)
-			except:
-				break
-			if 'sender' in jsonObject:
-				print jsonObject['sender']
-			if 'timestamp' in jsonObject:
-				print jsonObject['timestamp']
-			if 'response' in jsonObject:
-				print jsonObject['response']
-			if 'content' in jsonObject:
-				print jsonObject['content']
+
+			print data
+			# try:
+			# 	jsonObject = json.loads(data)
+			# except:
+			# 	break
+			# if 'sender' in jsonObject:
+			# 	print jsonObject['sender']
+			# if 'timestamp' in jsonObject:
+			# 	print jsonObject['timestamp']
+			# if 'response' in jsonObject:
+			# 	print jsonObject['response']
+			# if 'content' in jsonObject:
+			# 	print jsonObject['content']
 	
 	def stop(self):
 		self.daemon = False

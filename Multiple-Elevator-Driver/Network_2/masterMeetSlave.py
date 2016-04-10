@@ -40,7 +40,7 @@ class MasterSlaveSeeker():
 				# if(self.parser.parse(recvMsg) == 'master_confirmed'):
 				if(recvMsg == self.bcReplyMsg):
 					print "Master found"
-					return True
+					return addr[0]
 				else:
 					print recvMsg
 		print "No masters found"
@@ -52,7 +52,7 @@ class MasterSlaveSeeker():
 		"looking for slaves"
 
 		while True:
-			print "Looking for potential slaves"
+			#print "Looking for potential slaves"
 			try:
 				recvMsg, addr = self.udpSock.recvfrom(self.bufferSize)
 				print "Recieved: {}".format(recvMsg)

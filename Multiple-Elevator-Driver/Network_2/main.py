@@ -1,36 +1,27 @@
-# import Client
-# import Server
-
-
-#master.py
+import threading
+#import imp
+import sys
 from masterMeetSlave import *
+from runPythonScript import *
+import master
+#Client = imp.load_source('Client', 'Client/Client.py')
+#import Client
+sys.path.insert(0, 'Client/')
 
-statelist = []
+import Client
 
+def main():
+	seeker = MasterSlaveSeeker()
 
-#--------main purpose-------
+	masterIP = seeker.findMaster()
 
-# settup server
-
-# start elevator
-# thread UDP_listenforBroadcast
-
-# refresh elevator states and order queue
-
-# for orders in queue:
-# 	elevator = findOptimalElevator(elevStateList, request)
-
-# send(order, elevator)
-
-#---------------------------
-
-#startup: look for other masters first
-seeker = MasterSlaveSeeker()
+	if(masterIP):
+		#print masterIP
+		#continue as slave
+		Client.run(masterIP)
+		
+	else:
+		master.run()
 
 
-
-
-
-
-#we're the master, so we're saying that to other elevators
-seeker.replyToSlaves()
+main()

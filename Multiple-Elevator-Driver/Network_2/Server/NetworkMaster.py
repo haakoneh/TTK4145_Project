@@ -4,12 +4,14 @@ import SocketServer
 from socket import *
 import json
 import time
+import getIP
+import select
 
 
 ipAdresses = []
 connections = []
-elevConnections = []		#list of elevators, the index will be the ID of the respecitve elevator
-elevID = 0 					#incremental ID for elevators, might need mutex, since it's changed in threads
+IDCounter = 0
+#elevConnections = []		#list of elevators, the index will be the ID of the respecitve elevator
 
 class ClientHandler(Thread):
 	"""
@@ -20,11 +22,13 @@ class ClientHandler(Thread):
 	"""
 	def __init__(self, connection,addr):
 		super(ClientHandler, self).__init__()
+		global IDCounter, connections
 		self.connection = connection
 		self.addr = addr
-
-		elevators[elevID] 
-		elevID += 1
+		self.ID = 0
+		IDCounter += 1
+		connections.append(self.connection)
+		
 	
 	def run(self):
 		
@@ -33,43 +37,40 @@ class ClientHandler(Thread):
 		while True:
 			try:
 				receivedString = self.connection.recv(4096)
-			except:
+			except select.error:
 				try:
+					print 'connection lost'
 					userNames.remove(self.userName)
 					connections.remove(self.connection)
 				except:
 					pass
-		
-			connections.append(self.connection)
-			elevators
-			ipAdresses.append(self.addr[0])
 
 			if(receivedString):
 				# for con in connections:
 				# 	print con
-				for elev in elevConnections:
+				for elev in connections:
 					print elev
 
 				print receivedString
 			else:
 				continue
 
+			self.connection.send("ping")
+			time.sleep(0.1)
+
 			
 
-
-
-
-if __name__ == "__main__":
+def starter():
 	"""
 	This is the main method and is executed when you type "python Server.py"
 	in your terminal.
 
 	No alterations are necessary
 	"""
-	HOST, PORT = 'localhost', 9998
+	HOST, PORT = getIP.getMyIP(), 9998
 	print 'Server running...'
 	serverSocket = socket(AF_INET,SOCK_STREAM)
-	serverSocket.bind(('',PORT))
+	serverSocket.bind((HOST, PORT))
 	serverSocket.listen(100)
 
 

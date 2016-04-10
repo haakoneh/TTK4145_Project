@@ -2,9 +2,10 @@
 import socket
 import json
 import time
+#import imp
 from MessageReceiver import MessageReceiver
-from runPythonScript import *
-from UDP_broadcaster import *
+#MessageReceiver = imp.load_source('MessageReceiver', '/MessageReceiver.py')
+
 
 class Client:
 	
@@ -12,7 +13,8 @@ class Client:
 		self.host = host
 		self.serverPort = serverPort
 		self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.connection.connect((self.host,self.serverPort))
+		self.connection.settimeout(5)
+		self.connection.connect((self.host, self.serverPort))
 		self.jsonObject = None
 
 	def disconnect(self):
@@ -38,23 +40,16 @@ class Client:
 	def send(self):
 		self.connection.send(self.jsonObject)
 
+
+def run(serverIP):
+	client = Client(serverIP, 9998)
 	
+	while True:
+		try:
+			data = client.connection.recv(4096)
+		except socket.timeout:
+			print "timeout"
 
-if __name__ == '__main__':
-	UDP_Check = UDP_broadcaster()
-	if UDP_Check.broadcaster():
-		print 'We are slaves'
-	else: 
-		print 'We are masters'
-		runPythonScript('test.py')
-
-	#client = Client('localhost', 9998)
-	#client.receiveMessage()
-	#while True:
-	#	logout = client.rawInput()
-	#	client.send()
-	#	if(logout == "logout"):
-	#		time.sleep(0.5)
-	#		client.disconnect()
-	#		break
-	#	time.sleep(0.4)
+		print data
+		client.connection.send("ping")
+		time.sleep(0.4)
