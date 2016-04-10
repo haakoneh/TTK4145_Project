@@ -55,7 +55,7 @@ class ClientHandler(Thread):
 			else:
 				continue
 
-			self.connection.send("ping")
+			self.connection.send("master ping")
 			time.sleep(0.1)
 
 			

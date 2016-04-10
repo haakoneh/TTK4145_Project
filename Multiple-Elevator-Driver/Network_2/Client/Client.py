@@ -13,7 +13,7 @@ class Client:
 		self.host = host
 		self.serverPort = serverPort
 		self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.connection.settimeout(5)
+		self.connection.settimeout(0.2)
 		self.connection.connect((self.host, self.serverPort))
 		self.jsonObject = None
 
@@ -47,9 +47,10 @@ def run(serverIP):
 	while True:
 		try:
 			data = client.connection.recv(4096)
+			print data
 		except socket.timeout:
 			print "timeout"
 
-		print data
-		client.connection.send("ping")
+		
+		client.connection.send("Slave ping")
 		time.sleep(0.4)
