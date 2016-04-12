@@ -22,6 +22,10 @@ def run(masterIP):
 	slaveThread.start()
 
 
+	# if global killthread == True:
+	# 	kill thread
+
+
 # if(Client.run() == "master dead"):
 
 

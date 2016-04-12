@@ -6,7 +6,9 @@ import errno
 import sys
 #import imp
 from MessageReceiver import MessageReceiver
+import threading
 #MessageReceiver = imp.load_source('MessageReceiver', '/MessageReceiver.py')
+#from main import *
 
 
 class Client:
@@ -20,6 +22,8 @@ class Client:
 		self.connection.connect((self.host, self.serverPort))
 		self.ID = -1
 		self.jsonObject = None
+
+		self.alive = True
 
 	def disconnect(self):
 		self.connection.close()
@@ -44,85 +48,66 @@ class Client:
 	def send(self):
 		self.connection.send(self.jsonObject)
 
-	def handleLossOfMaster():
+	def handleLossOfMaster(self):
 
 		if(self.ID == 0):
 			print "Your master died"
 			#restart as slave
 
 
-		if(self.ID == 1):
+		if(self.ID >= 1):
 			#Dead master: Take over
 			#restart as master
-			print "Your master died"
-			return "Distant master died"
-			global killthread = TRUE
+			print "Distant master died: Rise to power"
+			time.sleep(1)
+			print "acive count: ", threading.activeCount()
+			print "enumerate: ", threading.enumerate()
 
-			self.disconnect()
+			self.alive = False
+			#self.disconnect()
+
 		else:
 			#restart as slave
-
-			pass
+			print "Distant master died find new master"
+			self.alive = False
 
 
 
 	def run(self):
 		print "making client"
 		timeoutCounter = 0
-		while True:
+		while self.alive:
 			try:
 				data = self.connection.recv(4096)
 				if data != self.ID:
 					self.ID = data	#needs a format check
 				print data
 
-			
-
-				#master always times out once at initialization for some reason. Quick fix:
-
+			#master always times out once at initialization for some reason. Quick fix:
+			except socket.timeout:
 				timeoutCounter += 1
 				if timeoutCounter > 1:
-					print "Master timed out"
+					print "Master timed out: ", timeoutCounter
 					#master is most likely dead: take over
 
-					if(self.ID == 0):
-						print "Your master died"
-						return "Your master died"
+					self.handleLossOfMaster()
 
-					if(self.ID == 1):
-						#Dead master: Take over
-						#restart as master
-						print "Your master died"
-						return "Distant master died"
-
-						self.disconnect()
-					else:
-						#restart as slave
-
-						pass
-					return "timeout"
 			except:
-				# if e.errno == errno.EPIPE:
-				print "broken pipe"
-
-			# except socket.error, e:
-			# 	if isinstance(e.args, tuple):
-			# 		print "errno is %d" % e[0]
-			# 		if e[0] == errno.EPIPE:
-			# 			# remote peer disconnected
-			# 			print "Detected remote disconnect"
-			# 		else:
-			# 			# determine and handle different error
-			# 			pass
 			
-
-
+				print "broken pipe"
+				self.handleLossOfMaster()
 
 			try:
 				self.connection.send("Slave ping: {}".format(self.ID))
 			except:
 				print "broken pipe"
 				#assume master dead:
+				self.handleLossOfMaster()
+
+
 
 
 			time.sleep(0.4)
+
+		#ugly ass fix
+		#main()
