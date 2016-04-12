@@ -44,29 +44,38 @@ class Client:
 		self.connection.send(self.jsonObject)
 
 	def handleLossOfMaster(self):
+		"""master is dead, act acordingly
+		Exit the while loop, so connections die and
+		stop pinging alive to processMonitor. Which allows  
+		external processMonitor to start main.py
 
-		if(self.ID == 0):
-			print "Your master died"
-			#restart as slave
-			slave.run()
+		"""
+		self.alive = False
 
 
-		if(self.ID >= 1):
-			#Dead master: Take over
-			#restart as master
-			print "Distant master died: Rise to power"
 
-			# time.sleep((int(self.ID) - 1)*0.2)
-			time.sleep(0.2)
-			# print "acive count: ", threading.activeCount()
-			# print "enumerate: ", threading.enumerate()
+		# if(self.ID == 0):
+		# 	print "Your master died"
+		# 	#restart as slave
+		# 	slave.run()
 
-			self.alive = False
 
-		else:
-			#restart as slave
-			print "Distant master died find new master"
-			self.alive = False
+		# if(self.ID >= 1):
+		# 	#Dead master: Take over
+		# 	#restart as master
+		# 	print "Distant master died: Rise to power"
+
+		# 	# time.sleep((int(self.ID) - 1)*0.2)
+		# 	time.sleep(0.2)
+		# 	# print "acive count: ", threading.activeCount()
+		# 	# print "enumerate: ", threading.enumerate()
+
+		# 	self.alive = False
+
+		# else:
+		# 	#restart as slave
+		# 	print "Distant master died find new master"
+		# 	self.alive = False
 
 
 
@@ -90,13 +99,10 @@ class Client:
 				timeoutCounter += 1
 				if timeoutCounter > 1:
 					print "Master timed out: ", timeoutCounter
-					
 					self.handleLossOfMaster()
 
 			except:
-			
 				print "broken pipe"
-
 				self.handleLossOfMaster()
 
 			try:
@@ -106,7 +112,7 @@ class Client:
 				#assume master dead:
 				self.handleLossOfMaster()
 
-			monitorSocket.sendto("alive", ("localhost", 30000))
+			monitorSocket.sendto("slave {}: alive".format(self.ID), ("localhost", 30000))
 
 
 

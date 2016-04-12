@@ -33,14 +33,13 @@ bufferSize = 100
 
 
 
-def run():
+def slaveMonitor():
 	while True:
 		try:
 			recvData = sock.recvfrom(bufferSize)
 			print recvData
-			time.sleep(0.5)
 		except socket.timeout:
-			runPythonScript("master.py")
+			runPythonScript("main.py")
 			break
 
-run()
+slaveMonitor()
