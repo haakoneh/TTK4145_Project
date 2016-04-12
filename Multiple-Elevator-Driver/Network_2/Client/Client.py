@@ -2,6 +2,8 @@
 import socket
 import json
 import time
+import errno
+import sys
 #import imp
 from MessageReceiver import MessageReceiver
 #MessageReceiver = imp.load_source('MessageReceiver', '/MessageReceiver.py')
@@ -53,7 +55,8 @@ class Client:
 					self.ID = data	#needs a format check
 				print data
 
-			except socket.timeout:
+			
+
 				#master always times out once at initialization for some reason. Quick fix:
 
 				timeoutCounter += 1
@@ -63,11 +66,14 @@ class Client:
 
 					if(self.ID == 0):
 						#you're the masters favourite slave. Something is probably wrong with you: kill yourself
-						pass
+						print "Your master died"
+						return "Your master died"
 
 					if(self.ID == 1):
 						#Dead master: Take over
 						#restart as master
+						print "Your master died"
+						return "Distant master died"
 
 						self.disconnect()
 					else:
@@ -75,7 +81,25 @@ class Client:
 
 						pass
 					return "timeout"
+			except:
+				# if e.errno == errno.EPIPE:
+				print "broken pipe"
 
-		
-			self.connection.send("Slave ping: {}".format(self.ID))
+			# except socket.error, e:
+			# 	if isinstance(e.args, tuple):
+			# 		print "errno is %d" % e[0]
+			# 		if e[0] == errno.EPIPE:
+			# 			# remote peer disconnected
+			# 			print "Detected remote disconnect"
+			# 		else:
+			# 			# determine and handle different error
+			# 			pass
+			
+
+
+
+			try:
+				self.connection.send("Slave ping: {}".format(self.ID))
+			except:
+				print "broken pipe"
 			time.sleep(0.4)
