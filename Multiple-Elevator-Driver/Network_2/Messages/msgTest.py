@@ -29,7 +29,7 @@ def testing(testType):
 		print parser.parse(json.dumps(data_2))
 
 	elif testType == 3:
-		stateTest = [[0 , 1], [2, 3]]
+		stateTest = [[1 , 2, 3, 4], [5, 6, 7, 8]]
 
 		print 'Expected result: ' + str(stateTest)
 
@@ -44,6 +44,7 @@ def testing(testType):
 	print
 
 
-into = raw_input('What type of test? ')
+# into = raw_input('What type of test? ')
 
-testing(int(into))
+# testing(int(into))
+testing(3)

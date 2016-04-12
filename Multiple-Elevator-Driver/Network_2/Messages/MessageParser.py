@@ -18,6 +18,8 @@ passing the content of the payload as a parameter:
 
 import json
 
+stateSize = 4
+
 class MessageParser():
     def __init__(self):
 
@@ -44,10 +46,14 @@ class MessageParser():
 
     def parse_states(self, payload):
         state_temp = map(int, payload['content'].split(' '))
-
         state_list= [] 
-        for i in xrange(0, len(state_temp), 2):
-        	state_list.append([state_temp[i], state_temp[i + 1]])
+        n = 0
+        for i in xrange(0, len(state_temp), stateSize):
+            n += 1
+            simple_state = []
+            for j in xrange(i, stateSize*n):
+                simple_state.append(state_temp[j])
+            state_list.append(simple_state)
         return state_list
 
 
