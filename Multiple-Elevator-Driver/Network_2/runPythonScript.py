@@ -5,7 +5,7 @@ import os
 #remember .py file ending
 def runPythonScript(filename):
 
-	commandString = "gnome-terminal -e 'python " + filename + "'"
+	commandString = "gnome-terminal -e 'python " + str(filename) + "'"
 	os.system(commandString)
 
 #runPythonScript("phoenix.py")

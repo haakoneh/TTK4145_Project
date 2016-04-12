@@ -4,11 +4,15 @@ import json
 import time
 import errno
 import sys
-#import imp
 from MessageReceiver import MessageReceiver
 import threading
+sys.path.insert(0, '../')
+
+
+from watchdog import Watchdog
+#from main import globalResetFlag
 #MessageReceiver = imp.load_source('MessageReceiver', '/MessageReceiver.py')
-#from main import *
+# import main
 
 
 class Client:
@@ -31,16 +35,7 @@ class Client:
 			self.messageReceiver.stop()
 		except:
 			pass
-	def rawInput(self):
-		request = raw_input("Request type: ")
-		if(request in ["login", "msg"]):	
-			content = raw_input("Content: ")
-			self.jsonObject = json.dumps({'request': request, 'content': content}, indent=4)
-		else:
-			self.jsonObject = json.dumps({'request': request}, indent=4)
-		return request
-
-
+	
 	def receiveMessage(self):
 		self.messageReceiver = MessageReceiver(self.connection)
 		self.messageReceiver.start()
@@ -53,18 +48,20 @@ class Client:
 		if(self.ID == 0):
 			print "Your master died"
 			#restart as slave
+			slave.run()
 
 
 		if(self.ID >= 1):
 			#Dead master: Take over
 			#restart as master
 			print "Distant master died: Rise to power"
-			time.sleep(1)
-			print "acive count: ", threading.activeCount()
-			print "enumerate: ", threading.enumerate()
+
+			# time.sleep((int(self.ID) - 1)*0.2)
+			time.sleep(0.2)
+			# print "acive count: ", threading.activeCount()
+			# print "enumerate: ", threading.enumerate()
 
 			self.alive = False
-			#self.disconnect()
 
 		else:
 			#restart as slave
@@ -76,11 +73,16 @@ class Client:
 	def run(self):
 		print "making client"
 		timeoutCounter = 0
+
+		monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+
 		while self.alive:
+			
 			try:
 				data = self.connection.recv(4096)
 				if data != self.ID:
-					self.ID = data	#needs a format check
+					self.ID = int(data)	#needs a format check
 				print data
 
 			#master always times out once at initialization for some reason. Quick fix:
@@ -88,13 +90,13 @@ class Client:
 				timeoutCounter += 1
 				if timeoutCounter > 1:
 					print "Master timed out: ", timeoutCounter
-					#master is most likely dead: take over
-
+					
 					self.handleLossOfMaster()
 
 			except:
 			
 				print "broken pipe"
+
 				self.handleLossOfMaster()
 
 			try:
@@ -104,10 +106,14 @@ class Client:
 				#assume master dead:
 				self.handleLossOfMaster()
 
+			monitorSocket.sendto("alive", ("localhost", 30000))
+
 
 
 
 			time.sleep(0.4)
+
+		#globalResetFlag = 1
 
 		#ugly ass fix
 		#main()

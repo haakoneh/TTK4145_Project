@@ -1,5 +1,5 @@
 import threading
-#import imp
+
 import sys
 from masterMeetSlave import *
 from runPythonScript import *
@@ -14,6 +14,7 @@ sys.path.insert(0, 'Client/')
 
 import Client
 
+globalResetFlag = 0
 
 def main():
 
@@ -38,10 +39,18 @@ def main():
 		slave.run(getMyIP())
 		print "after slave.run()"
 		
-
-		print "Slave created"
+		runPythonScript("processMonitor.py")
+		print "Monitor setup"
 
 		#Client.run(masterIP)#master needs it's own local slave
 
 
+
+
 main()
+
+# while True:
+# 	if globalResetFlag == 1:
+# 		globalResetFlag = 0
+# 		main()
+# 	time.sleep(1)
