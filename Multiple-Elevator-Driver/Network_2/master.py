@@ -35,8 +35,13 @@ statelist = []
 def run():
 	seeker = MasterSlaveSeeker()
 
+	print "before replyThread"
 	seekerThread = threading.Thread(target = seeker.replyToSlaves)
 	seekerThread.start()
 
-	NetworkMaster.starter()
+	print "Spawning NetworkMaster.starter()"
+
+	masterNetworkThread = threading.Thread(target = NetworkMaster.starter)
+	masterNetworkThread.start()
+	
 
