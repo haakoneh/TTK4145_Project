@@ -44,6 +44,27 @@ class Client:
 	def send(self):
 		self.connection.send(self.jsonObject)
 
+	def handleLossOfMaster():
+
+		if(self.ID == 0):
+			print "Your master died"
+			#restart as slave
+
+
+		if(self.ID == 1):
+			#Dead master: Take over
+			#restart as master
+			print "Your master died"
+			return "Distant master died"
+			global killthread = TRUE
+
+			self.disconnect()
+		else:
+			#restart as slave
+
+			pass
+
+
 
 	def run(self):
 		print "making client"
@@ -65,7 +86,6 @@ class Client:
 					#master is most likely dead: take over
 
 					if(self.ID == 0):
-						#you're the masters favourite slave. Something is probably wrong with you: kill yourself
 						print "Your master died"
 						return "Your master died"
 
@@ -102,4 +122,7 @@ class Client:
 				self.connection.send("Slave ping: {}".format(self.ID))
 			except:
 				print "broken pipe"
+				#assume master dead:
+
+
 			time.sleep(0.4)

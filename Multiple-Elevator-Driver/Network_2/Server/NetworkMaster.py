@@ -49,11 +49,6 @@ class ClientHandler(Thread):
 			#self.connection.send("master ping")
 			self.pingToSlave()
 
-			
-
-				
-
-
 			time.sleep(0.1)
 
 			
