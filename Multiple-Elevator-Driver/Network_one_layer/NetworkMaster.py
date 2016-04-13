@@ -52,6 +52,9 @@ class SlaveHandler(Thread):
 
 			# print 'recievedString: ' + str(receivedString)
 			stringer = self.messageParser.parse(receivedString)
+			if not stringer:
+				break
+			
 			print stringer
 
 			#self.connection.send("master ping")

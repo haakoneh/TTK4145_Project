@@ -52,11 +52,15 @@ class MessageParser():
         }
 
     def parse(self, payload):
-        payload = json.loads(payload) # decode the JSON object
-        if payload['msgType'] in self.possible_responses:
-            return self.possible_responses[payload['msgType']](payload)
-        else:
-            print 'Msg not valid!'
+        try:
+            payload = json.loads(payload) # decode the JSON object
+            if payload['msgType'] in self.possible_responses:
+                return self.possible_responses[payload['msgType']](payload)
+            else:
+                print 'Msg not valid!'
+                return None
+        except:
+            return None
 
     def parse_udp(self, payload):
         return str(payload['content'])
