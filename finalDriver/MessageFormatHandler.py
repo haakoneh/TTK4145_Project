@@ -49,7 +49,6 @@ class MessageEncoder():
 
 class MessageParser():
     def __init__(self):
-
         self.possible_responses = {
             'Allstates': self.parse_Allstates,
             'state': self.parseState,
@@ -63,6 +62,7 @@ class MessageParser():
     def parse(self, payload):
         try:
             payload = json.loads(payload) # decode the JSON object
+        
             if payload['msgType'] in self.possible_responses:
                 # return self.possible_responses[payload['msgType']](payload)
                 return self.possible_responses[payload['msgType']](payload)
@@ -71,6 +71,7 @@ class MessageParser():
                 return None
         except:
             return None
+            
 
     def parse_udp(self, payload):
         return str(payload['content'])

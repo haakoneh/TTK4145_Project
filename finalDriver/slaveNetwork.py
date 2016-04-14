@@ -17,7 +17,7 @@ class Slave:
 		self.host = host
 		self.serverPort = serverPort
 		self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.connection.settimeout(0.2)
+		self.connection.settimeout(1)
 		try:
 			self.connection.connect((self.host, self.serverPort))
 		except:
@@ -48,6 +48,7 @@ class Slave:
 		self.connection.send(msg)
 
 	def sendPing(self):
+		print 'self_ID: ' + str(self.ID)
 		self.send(self.messageEncoder.encode('ping', 'slavePing:' + str(self.ID)))
 
 	def handleLossOfMaster(self):

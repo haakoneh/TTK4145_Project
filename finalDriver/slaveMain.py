@@ -88,33 +88,26 @@ def runElevator(masterIP, port):
 		"""recieve from master"""
 		try:
 			masterMessage = json.loads(slave.receive())
-			print 'masterMessage: ' + str(masterMessage)
+			print 'masterMessage: ' + str(masterMessage['msgType'])
 
 			if masterMessage['msgType'] == 'request':
-
+				print 'inside if in slaveMain'
 				"""change this function to do smart stuf"""
 				req_list.addGlobalRequest(request)
 				# request = self.messageParser.parse(receivedString)
 
 			elif masterMessage['msgType'] == 'elev_id':
-				newId = self.messageParser.parse(masterMessage)
-				print 'newId ' + str(newId)
-				if newId != slave.getSlaveID():
-					print 'newSlaveID'
-					slave.setSlaveID(newId)
+				print 'inside ELIF in slaveMain'
+				if slave.getSlaveID() != int(masterMessage['content']):
+					slave.setSlaveID(int(masterMessage['content']))
 
 			else:
 				print 'unknown msg from master'
 		except:
 			pass
 		
-
-
-
 		elev_panel.updateLightsByRequestList(req_list.list)
-		#udp check, added in multiple elevator 
 
-		#check if waiting at floor
 		if floor_timer.getTimeFlag():
 			if floor_timer.isTimeOut(1):
 				print "Doors close"
