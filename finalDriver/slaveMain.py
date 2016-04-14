@@ -76,24 +76,35 @@ def runElevator(masterIP, port):
 		
 
 		"""This is where we send requests to master"""
-		for request in req_list.list:
-			if(request[buttonIndex] != INPUT.BUTTON_IN):
-				#send to master and remove
-				msg = msgEncoder.encode("request", request)
-				if not msg in msgBuffer:
-					msgBuffer.append(msg)
-					print "Slave sending: {}".format(msg)
-				# msgBuffer.append(message)
-				req_list.removeRequestByRequest(request)
+
+		globalRequest = req_list.getGlobalRequest()
+
+		if globalRequest:
+			msg = msgEncoder.encode("request", globalRequest)
+			if not msg in msgBuffer:
+				msgBuffer.append(msg)
+				print "Slave sending: {}".format(msg)
 
 		"""recieve from master"""
-		try: 
+		try:
 			masterMessage = json.loads(slave.receive())
-			print 'masterMessage' + str(masterMessage)
+			print 'masterMessage: ' + str(masterMessage)
 
 			if masterMessage['msgType'] == 'request':
+
+				"""change this function to do smart stuf"""
 				req_list.addGlobalRequest(request)
 				# request = self.messageParser.parse(receivedString)
+
+			elif masterMessage['msgType'] == 'elev_id':
+				newId = self.messageParser.parse(masterMessage)
+				print 'newId ' + str(newId)
+				if newId != slave.getSlaveID():
+					print 'newSlaveID'
+					slave.setSlaveID(newId)
+
+			else:
+				print 'unknown msg from master'
 		except:
 			pass
 		
@@ -141,7 +152,7 @@ def runElevator(masterIP, port):
 					prevState = state
 					msg = msgEncoder.encode("state", prevState)
 					if not msg in msgBuffer:
-						print 
+						print 'newState'
 						msgBuffer.append(msg)
 					time.sleep(0.2)
 			
@@ -162,7 +173,8 @@ def runElevator(masterIP, port):
 
 		if msgBuffer:
 			slave.send(msgBuffer.pop(0))
-
+		else:
+			slave.sendPing()
 
 
 		if elev.getStopSignal():
@@ -175,4 +187,4 @@ def runElevator(masterIP, port):
 
 
 
-runElevator(getMyIP(), 9998)
+runElevator(getMyIP(), 9990)

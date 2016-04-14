@@ -47,6 +47,9 @@ class Slave:
 	def send(self, msg):
 		self.connection.send(msg)
 
+	def sendPing(self):
+		self.send(self.messageEncoder.encode('ping', 'slavePing:' + str(self.ID)))
+
 	def handleLossOfMaster(self):
 		"""master is dead, act acordingly
 		Exit the while loop, so connections die and
@@ -59,7 +62,11 @@ class Slave:
 
 		self.alive = False
 
+	def setSlaveID(self, newID):
+		self.ID = newID
 
+	def getSlaveID(self):
+		return self.ID
 
 	def run(self, globalList):
 		print "making Slave"

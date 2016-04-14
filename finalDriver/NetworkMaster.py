@@ -39,6 +39,7 @@ class SlaveHandler(Thread):
 		self.msgBuffer = []
 		
 	def pingToSlave(self):
+		print "pinging to slave"
 		id_ping = self.messageEncoder.encode('elev_id', self.slaveID())
 		self.connection.send(id_ping)
 	
@@ -51,8 +52,7 @@ class SlaveHandler(Thread):
 			try:
 				receivedString = self.connection.recv(4096)
 			except:
-				#temorarily assuming broken pipe error
-				#Remove connection from list, maybe thread seppuku
+				print 'no msg from Slave'
 				connections.remove(self.connection)
 
 			# print 'recievedString: ' + str(receivedString)
@@ -70,13 +70,17 @@ class SlaveHandler(Thread):
 				stateDict[str(self.slaveID())] = self.messageParser.parse(receivedString)
 				print 'stateDict: ' + str(stateDict)
 
+			elif message['msgType'] == 'ping':
+				ping = self.messageParser.parse(receivedString)
+				pass
+
 			elif message['msgType'] == 'request':
 				request = self.messageParser.parse(receivedString)
 
 				lowestCost = NR_Floors*2 #should be the maximum cost
 				for elevator in stateDict:
 					cost = calculateCost(stateDict[elevator], request)
-					print "\n\n\ncost: ", cost
+					print "cost: ", cost
 					if(cost < lowestCost):
 						lowestCost = cost
 						bestElevator = elevator
@@ -95,14 +99,14 @@ class SlaveHandler(Thread):
 					self.pingToSlave()
 			except:
 				pass
-
+			print "end of master loop"
 			time.sleep(0.1)
 
 			
 
 def starter():
 
-	HOST, PORT = getMyIP(), 9998
+	HOST, PORT = getMyIP(), 9990
 	print 'networkMaster running...'
 
 	serverSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)

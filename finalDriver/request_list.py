@@ -8,6 +8,8 @@ class Request_List:
 		self.list = []
 		self.elevator = elevator
 		self.file = 'requestListFile.txt'
+		self.globalRequests = "globalRequests.txt"
+		self.globalList = []
 		self.readRequestFile()
 
 	def addRequest(self):
@@ -16,7 +18,10 @@ class Request_List:
 			for buttonType in range(3):
 				if self.elevator.getButtonSignal(buttonType, floor) == 1:
 					request = [buttonType, floor]
-					
+					if buttonType != INPUT.BUTTON_IN:
+						if request not in self.globalList:
+							self.globalList.append(request)
+
 					if request not in self.list:
 						self.list.append(request)
 						self.printRequestList()
@@ -29,6 +34,11 @@ class Request_List:
 			self.printRequestList()
 			self.updateRequestFile()
 
+	def getGlobalRequest(self):
+		if not self.globalList:
+			return []
+		return self.globalList.pop()
+			
 
 	def readRequestFile(self):
 		"""Reads from file during initialization, only copies orders from inside elevator"""
@@ -124,6 +134,7 @@ class Request_List:
 		pass
 
 	def printRequestList(self):
+		print 'Printing reqList'
 		for request in self.list:
 			print request
 	

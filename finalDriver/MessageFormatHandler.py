@@ -10,7 +10,7 @@ class MessageEncoder():
             'state': self.encodeState,
             'request': self.encode_request, 
             'elev_id': self.encode_elev_id, 
-            
+            'ping': self.encodePing,
             'udp': self.encode_udp,
 	    # More key:values pairs are needed	
         }
@@ -29,6 +29,9 @@ class MessageEncoder():
             stateString += ' '.join(str(e) for e in state)
             stateString += ' '
         return stateString.strip()
+
+    def encodePing(self, payload):
+        return str(payload)
 
     def encodeState(self, payload):
         return ' '.join(str(e) for e in payload)
@@ -52,6 +55,7 @@ class MessageParser():
             'state': self.parseState,
             'request': self.parse_request, 
             'elev_id': self.parse_elev_id, 
+            'ping': self.parsePing,
             'udp': self.parse_udp,
         # More key:values pairs are needed  
         }
@@ -83,6 +87,9 @@ class MessageParser():
             state_list.append(simple_state)
         return state_list
 
+    def parsePing(self, payload):
+        return str(payload)
+
     def parseState(self, payload):
         return map(int, payload['content'].split(' '))
 
@@ -90,4 +97,4 @@ class MessageParser():
         return map(int, payload['content'].split(' '))
 
     def parse_elev_id(self, payload):
-        return str(payload['content'])
+        return int(payload['content'])
