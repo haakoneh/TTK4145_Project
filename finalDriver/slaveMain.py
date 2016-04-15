@@ -61,6 +61,7 @@ def runElevator(masterIP, port):
 		prevState = [elev.getCurrentFloor(), elev.getMotorDirection(), 0]
 		msg = msgEncoder.encode("state", prevState)
 		msgBuffer.append(msg)
+		elev.setFloorIndicator(elev.getFloorSensorSignal())
 
 
 	elev.stop()
@@ -134,7 +135,7 @@ def runElevator(masterIP, port):
 			if(elev.getFloorSensorSignal() != currentFloor):	
 				current_floor = elev.getFloorSensorSignal()
 				elev.setCurrentFloor(current_floor)
-
+				elev.setFloorIndicator(elev.getFloorSensorSignal())
 				# print "Trying to send state"
 				"""this is where we update and send state"""
 				state = [-1 , -1, -1]

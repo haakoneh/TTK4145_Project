@@ -42,13 +42,6 @@ def main():
 		#slaveMain.runElevator(getMyIP(), 9998)
 		#runPythonScript("slaveMain.py")
 		print "after slave.run()"
-		
-		
-
-		#Slave.run(masterIP)#master needs it's own local slave
-
-
-
 
 main()
 
