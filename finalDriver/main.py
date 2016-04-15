@@ -8,7 +8,7 @@ from globalFunctions import *
 import time
 
 #Slave = imp.load_source('Slave', 'Slave/Slave.py')
-#import Slave
+import slaveMain
 
 globalResetFlag = 0
 
@@ -23,8 +23,8 @@ def main():
 
 		#proceed as slave
 		print "proceed as slave"
-		runPythonScript("slaveMain.py")
-		#slaveMain.runElevator(getMyIP(), 9998)
+		#runPythonScript("slaveMain.py")
+		slaveMain.runElevator(masterIP, 40404)
 	else:
 
 		#proceed as Master
@@ -33,13 +33,14 @@ def main():
 		#master.run()
 		print "after master.run()"
 
-		time.sleep(0.01)
+		time.sleep(1)
 
-		runPythonScript("processMonitor.py")
-		print "Monitor setup"
-
+		#runPythonScript("processMonitor.py")
+		#print "Monitor setup"
+		
+		slaveMain.runElevator(getMyIP(), 40404)
 		#slaveMain.runElevator(getMyIP(), 9998)
-		runPythonScript("slaveMain.py")
+		#runPythonScript("slaveMain.py")
 		print "after slave.run()"
 		
 		

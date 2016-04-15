@@ -97,7 +97,7 @@ def runElevator(masterIP, port):
 				# request = self.messageParser.parse(receivedString)
 
 			elif masterMessage['msgType'] == 'elev_id':
-				print 'inside ELIF in slaveMain'
+				#print 'inside ELIF in slaveMain'
 				if slave.getSlaveID() != int(masterMessage['content']):
 					slave.setSlaveID(int(masterMessage['content']))
 
@@ -147,10 +147,7 @@ def runElevator(masterIP, port):
 					if not msg in msgBuffer:
 						print 'newState'
 						msgBuffer.append(msg)
-					time.sleep(0.2)
-			
-
-
+	
 			if req_list.isRequestsatFloor(elev.current_floor):
 				if(req_list.isRequestAtFloorAndDirection(elev.current_floor)):
 					req_list.removeRequestsForDirection(elev.current_floor)
@@ -176,8 +173,5 @@ def runElevator(masterIP, port):
 
 		time.sleep(0.01)
 
-
-
-
-
-runElevator(getMyIP(), 9990)
+#runElevator(getMyIP(), 40404)
+#runElevator("129.241.187.142", 40404)

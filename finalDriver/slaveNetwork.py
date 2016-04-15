@@ -16,12 +16,14 @@ class Slave:
 		print "New Slave instance"
 		self.host = host
 		self.serverPort = serverPort
+		print "Trying to connect to: IP: {}\tPort: {}".format(self.host, self.serverPort)
 		self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.connection.settimeout(1)
 		try:
 			self.connection.connect((self.host, self.serverPort))
 		except:
-			print "connection refused, wtf"
+			print 'connection refused'
+
 		self.ID = -1
 		self.jsonObject = None
 		self.alive = True
@@ -45,8 +47,10 @@ class Slave:
 			return -1
 
 	def send(self, msg):
-		self.connection.send(msg)
-
+		try:
+			self.connection.send(msg)
+		except:
+			print "sending failed"
 	def sendPing(self):
 		print 'self_ID: ' + str(self.ID)
 		self.send(self.messageEncoder.encode('ping', 'slavePing:' + str(self.ID)))
@@ -116,13 +120,13 @@ class Slave:
 				self.handleLossOfMaster()
 				refusedTosend.append(slavePing)
 
-			monitorSocket.sendto("slave {}: alive".format(self.ID), ("localhost", 30000))
+			#monitorSocket.sendto("slave {}: alive".format(self.ID), ("localhost", 30000))
 
 			time.sleep(0.4)
 
 
 def slaveInit(masterIP):
 	print "New slave"
-	slave = Slave(masterIP, 9998)
+	slave = Slave(masterIP, 40404)
 	#slaveThread = threading.Thread(target = slave.run)
 	slaveThread.start()

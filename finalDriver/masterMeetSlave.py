@@ -46,11 +46,11 @@ class MasterSlaveSeeker():
 				
 			else:
 				# if(self.parser.parse(recvMsg) == 'master_confirmed'):
-				if(decMsg[1] == self.bcReplyMsg):
-					print "Master found"
+				if(decMsg == self.bcReplyMsg):
+					print "Master found, with IP: " + str(addr[0])
 					return addr[0]
 				else:
-					print decMsg[1]
+					print decMsg
 		print "No masters found"
 		return False
 

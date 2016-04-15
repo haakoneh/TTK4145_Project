@@ -106,7 +106,7 @@ class SlaveHandler(Thread):
 
 def starter():
 
-	HOST, PORT = getMyIP(), 9990
+	HOST, PORT = getMyIP(), 40404
 	print 'networkMaster running...'
 
 	serverSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
