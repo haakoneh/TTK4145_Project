@@ -74,8 +74,11 @@ class SlaveHandler(Thread):
 			try:
 				message = json.loads(receivedString)
 			except:
-				printString += "json.loads fail"
-			printString += "\n" +   'message' + str( message)
+				printString += "\n\n\n\njson.loads fail\n\n\n\n\n"
+				print printString
+				break
+
+			printString += "\n" +   'message' + str(message)
 
 
 
@@ -119,7 +122,7 @@ class SlaveHandler(Thread):
 						allMsgBuffers[str(bestElevator)].append(msg)
 				printString += "\n" +   "allMsgBuffers: {}".format(allMsgBuffers)
 
-				printString += "\n" +   "\n**********\nrequest appended to bestElevator: {}\n******\n".format(bestElevator)
+				printString += "\n" +   "\n**********\nrequest appended to bestElevator: {} with cost: {}\n******\n".format(bestElevator, cost)
 				
 
 				self.lock.release()
@@ -129,7 +132,7 @@ class SlaveHandler(Thread):
 			printString += "\n" +   "Self IP: {}".format(getMyIP())#store this on setup instead
 			printString += "\n" +   "*******allMsgBuffers: \n{}\n*******".format(allMsgBuffers) 
 			# try:
-			printString += "\n" +   "allMsgBuffers[ßelf]: {}".format(allMsgBuffers[str(self.slaveID())])
+			printString += "\n" +   "allMsgBuffers[Self]: {}".format(allMsgBuffers[str(self.slaveID())])
 			if allMsgBuffers[str(self.slaveID())]:
 				printString += "\n" +   "***Sending request to slave***: {}".format(allMsgBuffers[str(self.slaveID())])
 				sendstuff = allMsgBuffers[str(self.slaveID())].pop(0)

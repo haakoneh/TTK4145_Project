@@ -95,8 +95,18 @@ def runElevator(masterIP, port):
 			if masterMessage['msgType'] == 'request':
 				printString += "Recieved global request from master {}".format(masterMessage["content"])
 				"""change this function to do smart stuf"""
+				#req_list.addGlobalRequest(request)
+
+
+				"""*******This is skipped for some fucked up reason
+				wait maibe not actually					
+				*****"""
+				
+				#printString += "Adding global request to local list"
 				req_list.addGlobalRequest(request)
-				# request = self.messageParser.parse(receivedString)
+				printString += "Added global request to local list"
+
+
 
 			elif masterMessage['msgType'] == 'elev_id':
 				#printString += "\n" +   'inside ELIF in slaveMain'
@@ -163,6 +173,10 @@ def runElevator(masterIP, port):
 					req_list.removeRequestsAtFloor(elev.current_floor)
 					openDoor(floor_timer, elev)
 
+		#printString += "\n*********\nreqList:\n{}\n\n".format(req_list.list)
+		printString += "\n*********\nGlobalList:\n{}\n\n".format(req_list.globalList)
+
+
 		if msgBuffer:
 			slave.send(msgBuffer.pop(0))
 		else:
@@ -170,6 +184,7 @@ def runElevator(masterIP, port):
 
 
 		if printString != prevPrintString:
+			print "wtf"
 			print printString
 			prevPrintString = printString
 
