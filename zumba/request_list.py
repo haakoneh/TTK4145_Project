@@ -43,17 +43,18 @@ class Request_List:
 		with open(self.file, 'r') as f:
 			string_list = [line.rstrip('\n') for line in f]
 		
-
 		for string in string_list:
 			request = map(int, string[1:-1].split(','))
-			if request[0] == INPUT.BUTTON_IN:
-				self.list.append(request)
+			self.list.append(request)
 
 	def updateRequestFile(self):
 		"""Updates file whenever the request list is changed"""
-		with open(self.file, 'w') as f:
-		    for s in self.list:
-		        f.write(str(s) + '\n')	
+		if not self.list:
+			open('self.file', 'w').close()
+		else:
+			with open(self.file, 'w') as f:
+			    for s in self.list:
+			        f.write(str(s) + '\n')	
 
 	def removeRequestByRequest(self, request):
 		""""""	
@@ -188,3 +189,8 @@ class Request_List:
 				if request[1] < furthestAway:
 					furthestAway = request[1]
 		return furthestAway
+
+	def addListToList(self, newList):
+		for item in newList:
+			if item not in self.list:
+				self.list.append

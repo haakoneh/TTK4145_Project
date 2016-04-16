@@ -1,18 +1,18 @@
 import json
 
-stateSize = 4
+requestSize = 2
 
 class MessageEncoder():
     def __init__(self):
 
         self.possible_msg_types = {
-            'Allstates': self.encodeAllStates,
+            'globalRequestBack': self.encodeAllStates,
             'state': self.encodeState,
             'request': self.encode_request, 
             'elev_id': self.encode_elev_id, 
             'ping': self.encodePing,
             'udp': self.encode_udp,
-	    # More key:values pairs are needed	
+        # More key:values pairs are needed  
         }
     
     def encode(self, msgType, payload):
@@ -50,7 +50,7 @@ class MessageEncoder():
 class MessageParser():
     def __init__(self):
         self.possible_responses = {
-            'Allstates': self.parse_Allstates,
+            'globalRequestBack': self.parseGlobalRequestBack,
             'state': self.parseState,
             'request': self.parse_request, 
             'elev_id': self.parse_elev_id, 
@@ -71,19 +71,29 @@ class MessageParser():
                 return None
         except:
             return None
-            
+    
+    def parseString(self, payload):
+        try:      
+            if payload['msgType'] in self.possible_responses:
+                # return self.possible_responses[payload['msgType']](payload)
+                return self.possible_responses[payload['msgType']](payload)
+            else:
+                print 'Msg not valid!'
+                return None
+        except:
+            return None
 
     def parse_udp(self, payload):
         return str(payload['content'])
 
-    def parse_Allstates(self, payload):
+    def parseGlobalRequestBack(self, payload):
         state_temp = map(int, payload['content'].split(' '))
         state_list= [] 
         n = 0
-        for i in xrange(0, len(state_temp), stateSize):
+        for i in xrange(0, len(state_temp), requestSize):
             n += 1
             simple_state = []
-            for j in xrange(i, stateSize*n):
+            for j in xrange(i, requestSize*n):
                 simple_state.append(state_temp[j])
             state_list.append(simple_state)
         return state_list

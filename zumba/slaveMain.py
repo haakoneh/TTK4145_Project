@@ -53,6 +53,7 @@ def runElevator(masterIP, port):
 	globalRequestList = Request_List(elev, 'globalRequestListFile.txt')
 	floorStopTimer = TimerElev()
 	msgEncoder = MessageEncoder()
+	msgParser = MessageParser()
 	msgBuffer = []
 
 	prevState = [-1, -1, -1]
@@ -74,6 +75,8 @@ def runElevator(masterIP, port):
 
 	elev.stop()
 
+	requestList.addListToList(globalRequestList.list)
+
 	while slave.alive:
 		printString = ""
 		
@@ -81,6 +84,11 @@ def runElevator(masterIP, port):
 		requestList.addRequest()
 
 		printString += "\nglobal list:\n{}\n\n".format(requestList.globalList)
+
+		if msgBuffer:
+			slave.send(msgBuffer.pop(0))
+		else:
+			slave.sendPing()
 
 		"""This is where we send requests to master"""
 
@@ -95,26 +103,39 @@ def runElevator(masterIP, port):
 
 		"""recieve from master"""
 		printString += "\n \t\t\tID: {}".format(slave.getSlaveID())
-		try:
-			masterMessage = json.loads(slave.receive())
-			#printString += "\n" +   'masterMessage: ' + str(masterMessage['msgType'])
+		# try:
 
-			if masterMessage['msgType'] == 'request':
-				#printString += "Recieved global request from master {}".format(masterMessage["content"])
-				printString += "Recieved global request from master {}".format(masterMessage["content"])
-				"""change this function to do smart stuf"""
-				
-				#requestList.addGlobalRequest(request)
-				requestList.addGlobalRequest(map(int, masterMessage['content'].split(' ')))
+		receiveMsg = slave.receive()
+		if receiveMsg:
+			masterMessage = json.loads(receiveMsg)
+		else:
+			continue
 
-			elif masterMessage['msgType'] == 'elev_id':
-				if slave.getSlaveID() != int(masterMessage['content']):
-					slave.setSlaveID(int(masterMessage['content']))
+		printString += "\n\t\t" +   'masterMessage: ' + str(masterMessage['msgType'])
+		printString += "\n\t\t" +   'masterMessage: ' + str(masterMessage['content'])
 
-			else:
-				printString += "\n" +   'unknown msg from master'
-		except:
-		 	printString += '\nexcept for masterMessage\n'
+
+		if masterMessage['msgType'] == 'request':
+			#printString += "Recieved global request from master {}".format(masterMessage["content"])
+			printString += "Recieved global request from master {}".format(masterMessage["content"])
+			"""change this function to do smart stuf"""
+			
+			#requestList.addGlobalRequest(request)
+			requestList.addGlobalRequest(map(int, masterMessage['content'].split(' ')))
+
+		elif masterMessage['msgType'] == 'elev_id':
+			if slave.getSlaveID() != int(masterMessage['content']):
+				slave.setSlaveID(int(masterMessage['content']))
+
+		elif masterMessage['msgType'] == 'globalRequestBack':
+			globalRequestList.list = msgParser.parseString(masterMessage)
+			globalRequestList.updateRequestFile()
+			printString += '\n globalRequestList:  ' + str(globalRequestList.list)
+
+		else:
+			printString += "\n" +   'unknown msg from master'
+		# except:
+		 	#printString += '\nexcept for masterMessage\n'
 		
 		elevPanel.updateLightsByRequestList(requestList.list)
 
@@ -166,10 +187,7 @@ def runElevator(masterIP, port):
 		#printString += "\n*********\nreqList:\n{}\n\n".format(requestList.list)
 		printString += "\nlocal list:\n{}\n\n".format(requestList.list)
 
-		if msgBuffer:
-			slave.send(msgBuffer.pop(0))
-		else:
-			slave.sendPing()
+		
 
 
 		if printString != prevPrintString:

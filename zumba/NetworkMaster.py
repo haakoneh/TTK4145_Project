@@ -19,8 +19,7 @@ stateList = []
 stateDict = {}
 IDCounter = 0
 allMsgBuffers = {}
-
-#elevConnections = []		#list of elevators, the index will be the ID of the respecitve elevator
+globalRequestPending = []
 
 printString = ""
 
@@ -102,7 +101,6 @@ class SlaveHandler(Thread):
 		except:
 			print "slave not found in connections list"
 			self.slaveID = -1
-		printString +=  "\nID ipdated to: {}".format(self.slaveID)
 
 
 	def removeSlave(self):
@@ -110,21 +108,27 @@ class SlaveHandler(Thread):
 		print printString
 		print "\t\t\tRemoving slave nr: {}".format(self.getID())
 
-		
+		try:
+			self.lock.acquire()
+			del allMsgBuffers[str(self.getID())]
+			slaveStateData = stateDict[str(self.getID())]
+			stateDict.remove(str(self.slaveID))
+			connections.remove(self.connection)
+			self.lock.release()
+
+		except:
+			print "\t\t self slaveID set to -1"
+			print "\t\t\tRemoving of slave failed"
 		self.lock.acquire()
-		del allMsgBuffers[str(self.getID())]
-		slaveStateData = stateDict[str(self.getID())]
-		del stateDict[(str(self.slaveID))]
-		connections.remove(self.connection)
+		if len(slaveStateData) > 3:
+			for i in xrange(3, len(slaveStateData), 2):
+				requestForNewSlave = [slaveStateData[i], slaveStateData[i + 1]]
+				printString += self.sendRequestToSlave(requestForNewSlave, printString)
 		self.lock.release()
+
 		print "\t\t\tRemoving should be complete"
-		
-			##assume that slave has already been removed
-			# print "\t\t\tRemoving of slave failed"
-			# if len(slaveStateData) > 3:
-			# 	for i in xrange(3, len(slaveStateData), 2):
-			# 		requestForNewSlave = [slaveStateData[i], slaveStateData[i + 1]]
-			# 		printString += self.sendRequestToSlave(requestForNewSlave, printString)
+		##assume that slave has already been removed
+			
 		print "\t\t self slaveID set to -1"
 		self.slaveID = -1
 
@@ -133,8 +137,17 @@ class SlaveHandler(Thread):
 		default = " "
 		return allMsgBuffers.get(str(self.slaveID), default)
 
+	def updateGlobalRequest(self):
+		global globalRequestPending
+		global printString
+		msg = self.messageEncoder.encode('globalRequestBack', globalRequestPending)
+		self.msgToAllBuffers(msg)
+		printString += '\nglobalRequestBack broadcasted'
+		return printString
+
 
 	def run(self):
+		global globalRequestPending
 		prevPrintString = ""
 
 		
@@ -162,9 +175,15 @@ class SlaveHandler(Thread):
 
 			if message['msgType'] == 'state':
 				self.lock.acquire()
-				stateDict[str(self.getID())] = self.messageParser.parse(receivedString)
-				self.lock.release()
+				newState = self.messageParser.parse(receivedString)
+				stateDict[str(self.getID())] = newState
+				
 				printString += "\n" +   'stateDict: ' + str(stateDict)
+				if [newState[0], newState[1]] in globalRequestPending:
+					globalRequestPending.remove([newState[0], newState[1]])
+				printString += '\n******globalRequestPending: ' + str(globalRequestPending)
+				printString = self.updateGlobalRequest()
+				self.lock.release()
 
 			elif message['msgType'] == 'ping':
 				ping = self.messageParser.parse(receivedString)
@@ -175,6 +194,12 @@ class SlaveHandler(Thread):
 				printString += "request = {}".format(request)
 
 				printString = self.sendRequestToSlave(request, printString)
+				self.lock.acquire()
+				if request not in globalRequestPending:
+					globalRequestPending.append(request)
+				printString += '\n******globalRequestPending: ' + str(globalRequestPending)
+				printString = self.updateGlobalRequest()
+				self.lock.release()
 
 			printString += "\n" +   "Self IP: {}".format(getMyIP())#store this on setup instead
 			printString += "\n" + str(self.getID()) + " buffer contains: " + str(self.getMsgBuffer())
