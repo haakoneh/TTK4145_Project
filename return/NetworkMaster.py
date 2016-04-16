@@ -19,6 +19,7 @@ stateList = []
 stateDict = {}
 IDCounter = 0
 allMsgBuffers = {}
+globalRequestPending = []
 
 #elevConnections = []		#list of elevators, the index will be the ID of the respecitve elevator
 
@@ -106,9 +107,11 @@ class SlaveHandler(Thread):
 
 
 	def run(self):
+		global globalRequestPending
 		prevPrintString = ""
 
 		
+
 		while True:
 			printString = ""
 			try:
@@ -131,9 +134,18 @@ class SlaveHandler(Thread):
 
 			if message['msgType'] == 'state':
 				self.lock.acquire()
-				stateDict[str(self.slaveID())] = self.messageParser.parse(receivedString)
+				newState = self.messageParser.parse(receivedString)
+				stateDict[str(self.slaveID())] = newState
 				self.lock.release()
 				printString += "\n" +   'stateDict: ' + str(stateDict)
+				if [newState[0], newState[1]] in globalRequestPending:
+					printString += "\n" +   'ALAAMMSODSNFNDSN: '
+
+				# if len(newState) > 3:
+				# 	for indx in xrange(3, len(newState), 2):
+				# 		if [newState[indx], newState[indx + 1]] in globalRequestPending:
+				# 			printString += "\n" +   'ALAAMMSODSNFNDSN: '
+
 
 			elif message['msgType'] == 'ping':
 				ping = self.messageParser.parse(receivedString)
@@ -144,6 +156,9 @@ class SlaveHandler(Thread):
 				printString += "request = {}".format(request)
 
 				printString = self.sendRequestToSlave(request, printString)
+				if request not in globalRequestPending:
+					globalRequestPending.append(request)
+					printString += '\n******globalRequestPending: ' + str(globalRequestPending)
 
 			printString += "\n" +   "Self IP: {}".format(getMyIP())#store this on setup instead
 			printString += "\n" + str(self.slaveID()) + " buffer contains: " + str(allMsgBuffers[str(self.slaveID())])
