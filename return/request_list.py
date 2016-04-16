@@ -94,7 +94,13 @@ class Request_List:
 
 		else: return 0	
 
-	
+	def getGlobalFromLocal(self):
+		globalInLocal = []
+		for request in self.list:
+			if request[0] != INPUT.BUTTON_IN:
+				globalInLocal.append(request[0])
+				globalInLocal.append(request[1])
+		return globalInLocal
 
 	def isRequests(self):
 		if self.list:	return 1
@@ -163,5 +169,22 @@ class Request_List:
 			furthestAway = -1
 			for request in self.list:
 				if request[1] > furthestAway:
+					furthestAway = request[1]
+		return furthestAway
+
+	def furthestRequestThisWay(self):
+		if not self.list:
+			return self.elevator.getCurrentFloor()
+
+		if self.elevator.direction == OUTPUT.MOTOR_UP :
+			furthestAway = -1
+			for request in self.list:
+				if request[1] > furthestAway:
+					furthestAway = request[1]
+
+		elif self.elevator.direction == OUTPUT.MOTOR_DOWN :
+			furthestAway = INPUT.NUM_FLOORS + 1
+			for request in self.list:
+				if request[1] < furthestAway:
 					furthestAway = request[1]
 		return furthestAway

@@ -46,7 +46,9 @@ class SlaveHandler(Thread):
 		allMsgBuffers[str(self.slaveID())] = []
 		#used for allMsgBuffers, maybe it should be used for stateDict and connections too
 		
-
+	def msgToAllBuffers(self, msg):
+		for msgBuffer in allMsgBuffers:
+			allMsgBuffers[msgBuffer].append(msg)
 		
 	def pingToSlave(self):
 
@@ -88,6 +90,20 @@ class SlaveHandler(Thread):
 		self.lock.release()
 		return printString
 
+	def removeSlave(self, printString):
+		print "Removing slave nr: {}".format(self.slaveID)
+		self.lock.acquire()
+		del allMsgBuffers[str(self.slaveID())]
+		self.lock.release()
+		slaveStateData = stateDict[str(self.slaveID())]
+		if len(slaveStateData) > 3:
+			for i in xrange(3, len(slaveStateData), 2):
+				requestForNewSlave = [slaveStateData[i], slaveStateData[i + 1]]
+				printString += self.sendRequestToSlave(requestForNewSlave, printString)
+
+		connections.remove(self.connection)
+		return printString
+
 
 	def run(self):
 		prevPrintString = ""
@@ -99,17 +115,14 @@ class SlaveHandler(Thread):
 				receivedString = self.connection.recv(4096)
 			except:
 				printString += "Failed to recieve from slave nr{}: ".format(self.slaveID())
+				self.removeSlave()
 
 
 			try:
 				message = json.loads(receivedString)
 			except:
 				printString += "\njson.loads fail\n"
-				self.lock.acquire()
-				del allMsgBuffers[str(self.slaveID())]
-				connections.remove(self.connection)
-				self.lock.release()
-				print printString
+				printString += self.removeSlave(printString)
 				break
 
 			printString += "\n" +   'message' + str(message)

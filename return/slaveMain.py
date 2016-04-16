@@ -20,6 +20,26 @@ def openDoor(timer, elevator):
 	elevator.stop()
 	printString += "\n" +   "Doors open"
 
+def sendState(elev, requestList, prevState, msgEncoder, msgBuffer):
+	global printString
+	state = [-1 , -1, -1]
+	state[0] = elev.getCurrentFloor()
+
+	if(requestList.isRequests()):
+		state[1] = elev.getMotorDirection()
+	else:
+		state[1] = OUTPUT.MOTOR_STOP
+	state[2] = requestList.furthestRequestAway()	#furthest floor
+	
+	state += requestList.getGlobalFromLocal()
+
+	if prevState != state:
+		prevState = state
+		msg = msgEncoder.encode("state", prevState)
+		if not msg in msgBuffer:
+			printString += "\n" +   'newState'
+			msgBuffer.append(msg)
+	return msgBuffer, prevState
 
 def runElevator(masterIP, port):
 	global printString, prevPrintString
@@ -30,6 +50,7 @@ def runElevator(masterIP, port):
 	elevPanel = Elevator_Panel(elev)
 	elevPanel.turnOffAllLights()
 	requestList = Request_List(elev, 'requestListFile.txt')
+	globalRequestList = Request_List(elev, 'globalRequestListFile.txt')
 	floorStopTimer = TimerElev()
 	msgEncoder = MessageEncoder()
 	msgBuffer = []
@@ -70,6 +91,7 @@ def runElevator(masterIP, port):
 			if not msg in msgBuffer:
 				msgBuffer.append(msg)
 				printString += "\n" +   "Slave sending: {}".format(msg)
+				msgBuffer, prevState = sendState(elev, requestList, prevState, msgEncoder, msgBuffer)
 
 		"""recieve from master"""
 		try:
@@ -85,7 +107,6 @@ def runElevator(masterIP, port):
 				requestList.addGlobalRequest(map(int, masterMessage['content'].split(' ')))
 
 			elif masterMessage['msgType'] == 'elev_id':
-				#printString += "\n" +   'inside ELIF in slaveMain'
 				if slave.getSlaveID() != int(masterMessage['content']):
 					slave.setSlaveID(int(masterMessage['content']))
 
@@ -126,29 +147,14 @@ def runElevator(masterIP, port):
 				# printString += "\n" +   "Trying to send state"
 				"""this is where we update and send state"""
 
-				state = [-1 , -1, -1]
-				state[0] = elev.getCurrentFloor()
+				msgBuffer, prevState = sendState(elev, requestList, prevState, msgEncoder, msgBuffer)
 
-				if(requestList.isRequests()):
-					state[1] = elev.getMotorDirection()
-				else:
-					state[1] = OUTPUT.MOTOR_STOP
-
-				state[2] = requestList.furthestRequestAway()	#furthest floor
-
-				if prevState != state:
-					prevState = state
-					msg = msgEncoder.encode("state", prevState)
-					if not msg in msgBuffer:
-						printString += "\n" +   'newState'
-						msgBuffer.append(msg)
-	
 			if requestList.isRequestsatFloor(elev.current_floor):
 				if(requestList.isRequestAtFloorAndDirection(elev.current_floor)):
 					requestList.removeRequestsForDirection(elev.current_floor)
 					openDoor(floorStopTimer, elev)
 
-				elif len(requestList.list) == 1:
+				elif requestList.furthestRequestThisWay() == elev.getCurrentFloor():
 					requestList.removeRequestsAtFloor(elev.current_floor)
 					openDoor(floorStopTimer, elev)
 
@@ -176,4 +182,4 @@ def runElevator(masterIP, port):
 		time.sleep(0.01)
 
 
-	runPythonScript("main.py")
+	#runPythonScript("main.py")

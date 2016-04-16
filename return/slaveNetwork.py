@@ -40,6 +40,8 @@ class Slave:
 		except:
 			pass
 	
+	
+
 	def receive(self):
 		try:
 			tempMsg = self.connection.recv(4096)
