@@ -29,18 +29,14 @@ class Request_List:
 		self.updateRequestFile()
 	
 	def addGlobalRequest(self, request):
-		print "*******'added global request*********"
 		if not request in self.list:
 			self.list.append(request)
-
-			print 'globalList: ' + str(self.globalList)
 			self.updateRequestFile()
 
 	def getGlobalRequest(self):
 		if not self.globalList:
 			return []
 		return self.globalList.pop()
-			
 
 	def readRequestFile(self):
 		"""Reads from file during initialization, only copies orders from inside elevator"""
@@ -52,7 +48,6 @@ class Request_List:
 			request = map(int, string[1:-1].split(','))
 			if request[0] == INPUT.BUTTON_IN:
 				self.list.append(request)
-
 
 	def updateRequestFile(self):
 		"""Updates file whenever the request list is changed"""
@@ -143,14 +138,12 @@ class Request_List:
 			for floor in range(0, self.elevator.current_floor):
 				if self.isRequestsatFloor(floor):
 					return 1
-
 			return 0
 
 		elif(self.elevator.direction == OUTPUT.MOTOR_UP):
 			for floor in range (self.elevator.current_floor, INPUT.NUM_FLOORS):
 				if self.isRequestsatFloor(floor):
 					return 1
-
 			return 0
 
 		else:
@@ -171,5 +164,4 @@ class Request_List:
 			for request in self.list:
 				if request[1] > furthestAway:
 					furthestAway = request[1]
-		print 'furthestAway' + str(furthestAway)
 		return furthestAway

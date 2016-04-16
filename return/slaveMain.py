@@ -24,32 +24,18 @@ def openDoor(timer, elevator):
 def runElevator(masterIP, port):
 	global printString, prevPrintString
 
-	###########
-	floorIndex = 1
-	buttonIndex = 0
-
-	##########
-
-
-
-	#elevator initialization
-	##############################################
-
 	slave = slaveNetwork.Slave(masterIP, port)
 
 	elev = Elevator()
-	elev_panel = Elevator_Panel(elev)
-	elev_panel.turnOffAllLights()
-	req_list = Request_List(elev, 'requestListFile.txt')
-	floor_timer = TimerElev()
+	elevPanel = Elevator_Panel(elev)
+	elevPanel.turnOffAllLights()
+	requestList = Request_List(elev, 'requestListFile.txt')
+	floorStopTimer = TimerElev()
 	msgEncoder = MessageEncoder()
 	msgBuffer = []
 
 	prevState = [-1, -1, -1]
-
 	
-
-
 	elev.setSpeed(300)
 
 	currentFloor = -1
@@ -67,20 +53,17 @@ def runElevator(masterIP, port):
 
 	elev.stop()
 
-	##################################################
-
-	#this loop asumes that elev.current floor is updated
-	while True:
+	while slave.alive:
 		printString = ""
 		
 		#check for request
-		req_list.addRequest()
+		requestList.addRequest()
 
-		printString += "\nglobal list:\n{}\n\n".format(req_list.globalList)
+		printString += "\nglobal list:\n{}\n\n".format(requestList.globalList)
 
 		"""This is where we send requests to master"""
 
-		globalRequest = req_list.getGlobalRequest()
+		globalRequest = requestList.getGlobalRequest()
 
 		if globalRequest:
 			msg = msgEncoder.encode("request", globalRequest)
@@ -98,11 +81,8 @@ def runElevator(masterIP, port):
 				printString += "Recieved global request from master {}".format(masterMessage["content"])
 				"""change this function to do smart stuf"""
 				
-				#req_list.addGlobalRequest(request)
-				req_list.addGlobalRequest(map(int, masterMessage['content'].split(' ')))
-
-
-
+				#requestList.addGlobalRequest(request)
+				requestList.addGlobalRequest(map(int, masterMessage['content'].split(' ')))
 
 			elif masterMessage['msgType'] == 'elev_id':
 				#printString += "\n" +   'inside ELIF in slaveMain'
@@ -114,21 +94,21 @@ def runElevator(masterIP, port):
 		except:
 		 	printString += '\nexcept for masterMessage\n'
 		
-		elev_panel.updateLightsByRequestList(req_list.list)
+		elevPanel.updateLightsByRequestList(requestList.list)
 
-		if floor_timer.getTimeFlag():
-			if floor_timer.isTimeOut(1):
+		if floorStopTimer.getTimeFlag():
+			if floorStopTimer.isTimeOut(1):
 				printString += "\n" +   "Doors close"
 			else:
 				time.sleep(0.1)
 				continue
 
 		#more requests ahead
-		if req_list.requestsAhead():
+		if requestList.requestsAhead():
 			elev.setMotorDirection(elev.direction)
 		
 		#there are requests, but not ahead
-		elif req_list.isRequests():
+		elif requestList.isRequests():
 			elev.reverseElevDirection()
 
 		#no orders
@@ -149,12 +129,12 @@ def runElevator(masterIP, port):
 				state = [-1 , -1, -1]
 				state[0] = elev.getCurrentFloor()
 
-				if(req_list.isRequests()):
+				if(requestList.isRequests()):
 					state[1] = elev.getMotorDirection()
 				else:
 					state[1] = OUTPUT.MOTOR_STOP
-					
-				state[2] = req_list.furthestRequestAway()	#furthest floor
+
+				state[2] = requestList.furthestRequestAway()	#furthest floor
 
 				if prevState != state:
 					prevState = state
@@ -163,22 +143,21 @@ def runElevator(masterIP, port):
 						printString += "\n" +   'newState'
 						msgBuffer.append(msg)
 	
-			if req_list.isRequestsatFloor(elev.current_floor):
-				if(req_list.isRequestAtFloorAndDirection(elev.current_floor)):
-					req_list.removeRequestsForDirection(elev.current_floor)
-					openDoor(floor_timer, elev)
+			if requestList.isRequestsatFloor(elev.current_floor):
+				if(requestList.isRequestAtFloorAndDirection(elev.current_floor)):
+					requestList.removeRequestsForDirection(elev.current_floor)
+					openDoor(floorStopTimer, elev)
 
-				elif len(req_list.list) == 1:
-					req_list.removeRequestsAtFloor(elev.current_floor)
-					openDoor(floor_timer, elev)
+				elif len(requestList.list) == 1:
+					requestList.removeRequestsAtFloor(elev.current_floor)
+					openDoor(floorStopTimer, elev)
 
 				elif elev.checkEndPoints():		
-					req_list.removeRequestsAtFloor(elev.current_floor)
-					openDoor(floor_timer, elev)
+					requestList.removeRequestsAtFloor(elev.current_floor)
+					openDoor(floorStopTimer, elev)
 
-		#printString += "\n*********\nreqList:\n{}\n\n".format(req_list.list)
-		printString += "\nlocal list:\n{}\n\n".format(req_list.list)
-
+		#printString += "\n*********\nreqList:\n{}\n\n".format(requestList.list)
+		printString += "\nlocal list:\n{}\n\n".format(requestList.list)
 
 		if msgBuffer:
 			slave.send(msgBuffer.pop(0))
@@ -194,8 +173,7 @@ def runElevator(masterIP, port):
 		 	elev.stop()
 		 	break
 
-
-
 		time.sleep(0.01)
 
-#runElevator(getMyIP(), 40404)
+
+	runPythonScript("main.py")

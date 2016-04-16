@@ -60,6 +60,35 @@ class SlaveHandler(Thread):
 			print "this slave has been removed"
 			pass
 
+	def sendRequestToSlave(self, request, printString):
+		bestElevator = -1
+
+		lowestCost = NR_Floors*2 #should be the maximum cost
+		for elevator in stateDict:
+			cost = calculateCost(stateDict[elevator], request)
+			if(cost < lowestCost):
+				lowestCost = cost
+				bestElevator = elevator
+
+		printString += "\t\t\tBest elevator: {}\tcost: {}".format(bestElevator, cost)
+
+		msg = self.messageEncoder.encode('request', request)
+
+
+		"""send request to the most suited elevator's buffer"""
+		self.lock.acquire()
+		if not str(bestElevator) in allMsgBuffers:
+			printString += "\n" +   "new entry in allMsgBuffers"
+			allMsgBuffers[str(bestElevator)] = [msg]
+		else:
+			printString += "\n" +   "trying to append to allMsgBuffers"
+			if not msg in allMsgBuffers[str(bestElevator)]:
+				allMsgBuffers[str(bestElevator)].append(msg)
+
+		self.lock.release()
+		return printString
+
+
 	def run(self):
 		prevPrintString = ""
 
@@ -101,34 +130,7 @@ class SlaveHandler(Thread):
 				request = self.messageParser.parse(receivedString)
 				printString += "request = {}".format(request)
 
-				bestElevator = -1
-
-
-				lowestCost = NR_Floors*2 #should be the maximum cost
-				for elevator in stateDict:
-					cost = calculateCost(stateDict[elevator], request)
-					if(cost < lowestCost):
-						lowestCost = cost
-						bestElevator = elevator
-
-				printString += "\t\t\tBest elevator: {}\tcost: {}".format(bestElevator, cost)
-
-				msg = self.messageEncoder.encode('request', request)
-
-
-				"""send request to the most suited elevator's buffer"""
-				self.lock.acquire()
-				if not str(bestElevator) in allMsgBuffers:
-					printString += "\n" +   "new entry in allMsgBuffers"
-					allMsgBuffers[str(bestElevator)] = [msg]
-				else:
-					printString += "\n" +   "trying to append to allMsgBuffers"
-					if not msg in allMsgBuffers[str(bestElevator)]:
-						allMsgBuffers[str(bestElevator)].append(msg)
-
-				self.lock.release()
-
-		
+				printString = self.sendRequestToSlave(request, printString)
 
 			printString += "\n" +   "Self IP: {}".format(getMyIP())#store this on setup instead
 			printString += "\n" + str(self.slaveID()) + " buffer contains: " + str(allMsgBuffers[str(self.slaveID())])

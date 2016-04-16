@@ -40,7 +40,7 @@ def calculateCost(state, request):
 
 
 	if(isAhead(state, request)):
-		if (state[direction] == request[buttonType]):
+		if (state[direction] == request[reqButton]):
 			totalDistance = abs(request[reqFloor] - state[floor])
 		else:
 			turnPoint = state[furthestRequest]

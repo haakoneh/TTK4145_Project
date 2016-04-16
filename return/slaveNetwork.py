@@ -30,6 +30,7 @@ class Slave:
 		self.messageBuffer = []
 		self.messageEncoder = MessageEncoder()
 		self.messageParser = MessageParser()
+		self.timeoutCounter = 0
 		
 
 	def disconnect(self):
@@ -41,16 +42,43 @@ class Slave:
 	
 	def receive(self):
 		try:
-			return self.connection.recv(4096)
+			tempMsg = self.connection.recv(4096)
+			return tempMsg
+		except socket.timeout:
+			self.timeoutCounter += 1
+			if self.timeoutCounter > 3:
+				print "Master timed out: ", self.timeoutCounter
+				self.alive = False
+				# self.handleLossOfMaster()
 		except:
-			print 'no msg'
+
+			self.timeoutCounter += 1
+			if self.timeoutCounter > 3:
+				print "Master timed out: ", self.timeoutCounter
+				self.alive = False
+			# 		self.handleLossOfMaster()
+			# self.handleLossOfMaster()
+			print 'Unkown error, timeoutCounter: ' + str(self.timeoutCounter)
 			return -1
 
 	def send(self, msg):
 		try:
 			self.connection.send(msg)
+			self.timeoutCounter = 0
+		except socket.timeout:
+				self.timeoutCounter += 1
+				if self.timeoutCounter > 3:
+					print "Master timed out: ", self.timeoutCounter
+					self.handleLossOfMaster()
 		except:
-			print "sending failed"
+			self.timeoutCounter += 1
+			if self.timeoutCounter > 3:
+				print "Master timed out: ", self.timeoutCounter
+				self.alive = False
+			# 		self.handleLossOfMaster()
+			# self.handleLossOfMaster()
+			print 'Unkown error, timeoutCounter: ' + str(self.timeoutCounter)
+			return -1
 	def sendPing(self):
 		#print 'self_ID: ' + str(self.ID)
 		self.send(self.messageEncoder.encode('ping', 'slavePing:' + str(self.ID)))
@@ -63,7 +91,7 @@ class Slave:
 
 		"""
 		if self.ID > 0:
-			time.sleep((int(self.ID) - 1) * 0.3)
+			time.sleep((int(self.ID) - 1) * 0.5)
 
 		self.alive = False
 
