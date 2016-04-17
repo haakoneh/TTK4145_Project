@@ -46,6 +46,18 @@ def updatePendingRequests(requestList, newData):
 	requestList = newData
 
 
+def stopAndRemoveRequests(elev, msgBuffer, msgEncoder, requestList):
+
+	hallRequests = requestList.removeAndReturnRequestsForDirection(elev.current_floor)
+
+	print "hallRequests: ", hallRequests
+
+	for request in hallRequests:
+		if request:
+			print "sending remove message to master:\n\tmsg: {}".format(msgEncoder.encode("removePending", request))
+			msgBuffer.append(msgEncoder.encode("removePending", request))
+
+	return msgBuffer
 
 
 def runElevator(masterIP, port):
@@ -125,6 +137,7 @@ def runElevator(masterIP, port):
 			elif masterMessage['msgType'] == 'elev_id':
 				if slave.getSlaveID() != int(masterMessage['content']):
 					slave.setSlaveID(int(masterMessage['content']))
+
 #New stuff related to pending request added here
 #######################################################
 			elif masterMessage['msgType'] == 'pendingRequests':
@@ -147,7 +160,7 @@ def runElevator(masterIP, port):
 		 	# printString += '\nexcept for masterMessage\n with message: {}'.format(receivedMessage)
 		 	printString += "received none"
 		
-		elevPanel.updateLightsByRequestList(requestList.list)
+		elevPanel.updateLightsByRequestList(requestList.list, pendingRequests.list)
 
 		if floorStopTimer.getTimeFlag():
 			if floorStopTimer.isTimeOut(1):
@@ -184,24 +197,12 @@ def runElevator(masterIP, port):
 			if requestList.isRequestsatFloor(elev.current_floor):
 				if(requestList.isRequestAtFloorAndDirection(elev.current_floor)):
 
-#####################Newstuff: tell master to remove request from pendingRequestsList###########
-
-					hallRequests = requestList.removeAndReturnRequestsForDirection(elev.current_floor)
-
-					for request in hallRequests:
-						if request:
-							msgBuffer.append(msgEncoder.encode("removePending", request))
-
-##################################################################################
+					msgBuffer = stopAndRemoveRequests(elev, msgBuffer, msgEncoder, requestList)
 
 					openDoor(floorStopTimer, elev)
 
 				elif requestList.furthestRequestThisWay() == elev.getCurrentFloor():
-					requestList.removeRequestsAtFloor(elev.current_floor)
-					openDoor(floorStopTimer, elev)
-
-				elif elev.checkEndPoints():		
-					requestList.removeRequestsAtFloor(elev.current_floor)
+					requestList.removeRequestsAtFloor(elev.getCurrentFloor())
 					openDoor(floorStopTimer, elev)
 
 		#printString += "\n*********\nreqList:\n{}\n\n".format(requestList.list)

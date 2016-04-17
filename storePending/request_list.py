@@ -120,9 +120,9 @@ class Request_List:
 		elif request_in in self.list:
 			self.list.remove(request_in)
 			self.updateRequestFile()
-			return 0
+			return []
 
-		else: return 0	
+		else: return []	
 
 	def getGlobalFromLocal(self):
 		globalInLocal = []
