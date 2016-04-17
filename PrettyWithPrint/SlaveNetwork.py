@@ -48,13 +48,16 @@ class SlaveNetwork:
 			self.timeoutCounter += 1
 			if self.timeoutCounter > 3:
 				print "Master timed out: ", self.timeoutCounter
-				self.handleLossOfMaster()
+				self.alive = False
+				# self.handleLossOfMaster()
 		except:
 
 			self.timeoutCounter += 1
 			if self.timeoutCounter > 3:
 				print "Master timed out: ", self.timeoutCounter
-				self.handleLossOfMaster()
+				self.alive = False
+			# 		self.handleLossOfMaster()
+			# self.handleLossOfMaster()
 			print 'Unkown error, timeoutCounter: ' + str(self.timeoutCounter)
 			return -1
 
@@ -81,7 +84,7 @@ class SlaveNetwork:
 		self.send(self.messageEncoder.encode('ping', 'slavePing:' + str(self.ID)))
 
 	def handleLossOfMaster(self):
-		time.sleep(abs((int(self.ID)) * 2))
+		time.sleep(abs((int(self.ID)) * 0.5))
 		self.alive = False
 
 	def setSlaveID(self, newID):
@@ -90,3 +93,60 @@ class SlaveNetwork:
 	def getSlaveID(self):
 		return self.ID
 
+	def run(self, globalList):
+		print "making Slave"
+		timeoutCounter = 0
+
+		monitorSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+
+		while self.alive:
+			refusedTosend =[]
+
+			print 'state in slave'
+			self.elevStateHandler.printFileContent()
+			
+
+			try:
+				data = self.connection.recv(4096)
+				decData = self.messageParser.parse(data)
+				if decData != self.ID:
+					self.ID = int(decData)	#needs a format check
+				print 'decData[1]: ' + str(decData)
+
+			#master always times out once at initialization for some reason. Quick fix:
+			except socket.timeout:
+				timeoutCounter += 1
+				if timeoutCounter > 1:
+					print "Master timed out: ", timeoutCounter
+					self.handleLossOfMaster()
+
+			except:
+				print "broken pipe"
+				self.handleLossOfMaster()
+
+
+			slavePing = self.messageEncoder.encode('elev_id', "Slave ping: {}".format(self.ID))
+			try:
+				
+				self.connection.send(slavePing)
+
+				if self.messageBuffer:
+					print self.messageBuffer
+
+			except:
+				print "broken pipe"
+				#assume master dead:
+				self.handleLossOfMaster()
+				refusedTosend.append(slavePing)
+
+			#monitorSocket.sendto("slave {}: alive".format(self.ID), ("localhost", 30000))
+
+			time.sleep(0.4)
+
+
+#def slaveInit(masterIP):
+#	print "New slave"
+#	slave = Slave(masterIP, 23432)
+#	#slaveThread = threading.Thread(target = slave.run)
+#	slaveThread.start()

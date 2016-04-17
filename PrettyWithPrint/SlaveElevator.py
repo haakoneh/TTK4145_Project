@@ -11,6 +11,8 @@ from colors import *
 
 class SlaveElevator:
 	def __init__(self, masterIP, port):
+		self.printString = ""
+		self.printStringPrev = ""
 
 		self.slave = SlaveNetwork.SlaveNetwork(masterIP, port)
 		self.elevIP = getMyIP()
@@ -30,11 +32,8 @@ class SlaveElevator:
 		self.msgBuffer = []
 		self.prevState = [-1, -1, -1]
 		self.prevFloor = -1
-		self.noneCounter = 0
 
 		self.runElevator()
-		
-
 
 	def sendState(self):
 		
@@ -53,6 +52,7 @@ class SlaveElevator:
 			self.prevState = state
 			msg = self.msgEncoder.encode("state", self.prevState)
 			if not msg in self.msgBuffer:
+				self.printString += "\n" +   'newState'
 				self.msgBuffer.append(msg)
 
 		return self.msgBuffer, self.prevState
@@ -72,8 +72,10 @@ class SlaveElevator:
 
 	def openDoor(self):
 
+		self.printString += "\n" +   "At requested floor"
 		self.floorStopTimer.resetTimer()
 		self.elev.stop()
+		self.printString += "\n" +   "Doors open"
 		self.elev.setDoorLamp(1)
 
 	def startFunction(self):
@@ -83,6 +85,7 @@ class SlaveElevator:
 			time.sleep(0.1)
 				
 		self.elev.setCurrentFloor(self.elev.getFloorSensorSignal())
+		self.printString += "\n" +   "elev.curr: " + str(self.elev.getCurrentFloor()) + " getfloor: " + str(self.elev.getFloorSensorSignal())
 		self.prevState = [self.elev.getCurrentFloor(), self.elev.getMotorDirection(), 0]
 		msg = self.msgEncoder.encode("state", self.prevState)
 		self.msgBuffer.append(msg)
@@ -94,22 +97,19 @@ class SlaveElevator:
 
 		self.startFunction()
 
+		currentFloor = -1
 
 		while self.slave.alive:
-			if connectionLost(self.elevIP): 
-				cprint("Connection lost: break", FAIL)
+			if connectionLost(self.elevIP) or self.elev.getStopSignal(): 
 				self.elev.stop()
 				break
-			elif self.elev.getStopSignal():
-				cprint("Stop button pressed: break", GREEN)
-				self.elev.stop()
-				break
-			elif self.noneCounter >= 5:
-				cprint("Nonecounter reached limit: break", FAIL)
-				break
 
-
+			self.printString = ""
+			
+			#check for request
 			self.requestList.addRequest()
+
+			self.printString += "\nglobal list:\n{}\n\n".format(self.requestList.globalList)
 
 			"""This is where we send requests to master"""
 
@@ -120,28 +120,30 @@ class SlaveElevator:
 				if not msg in self.msgBuffer:
 					self.msgBuffer.append(msg)
 					self.sendState()
-
+	######
 
 			receivedMessage = self.slave.receive()
+			
+
+			# print "recievedMessage: ".format(receivedMessage)
 
 
 			if receivedMessage != None and receivedMessage != " ":
 				try:
 					masterMessage = json.loads(receivedMessage)
-					noneCounter = 0
 				except:
 					cprint("json.loads error", WARNING)
 					self.slave.handleLossOfMaster()
 					continue
 
 				if masterMessage['msgType'] == 'request':
+					self.printString += "Recieved global request from master {}".format(masterMessage["content"])
+					
 					self.requestList.addGlobalRequest(map(int, masterMessage['content'].split(' ')))
 
 				elif masterMessage['msgType'] == 'elev_id':
 					if self.slave.getSlaveID() != int(masterMessage['content']):
 						self.slave.setSlaveID(int(masterMessage['content']))
-
-
 
 
 				elif masterMessage['msgType'] == 'pendingRequests':
@@ -152,10 +154,11 @@ class SlaveElevator:
 					self.requestList.addListToRequestList(self.pendingRequests.list)
 
 				else:
-					cprint("Unknown message".format(receivedMessage), WARNING)
+					self.printString += "\n" +   'unknown msg from master'
+
 			else:
-			 	cprint("received none: ".format(receivedMessage), WARNING)
-			 	self.noneCounter += 1
+
+			 	self.printString += "received none"
 			
 			self.elevPanel.updateLightsByRequestList(self.requestList.list, self.pendingRequests.list)
 
@@ -170,13 +173,22 @@ class SlaveElevator:
 						self.stopAndRemoveRequests()
 						self.openDoor()
 
+			# print 'self.elev.getCurrentFloor()' + str(self.elev.getCurrentFloor())
+
 			if self.msgBuffer:
 				self.slave.send(self.msgBuffer.pop(0))
 			else:
 				self.slave.sendPing()
 
+			if self.printString != self.printStringPrev:
+				# print self.printString
+				self.printStringPrev = self.printString
+
+			# print "direction: {}\tlocal requests: {} pending: {}".format(self.elev.direction, self.requestList.list,self.pendingRequests.list)
+
 			if self.floorStopTimer.getTimeFlag():
 				if self.floorStopTimer.isTimeOut(1):
+					self.printString += "\n" +   "Doors close"
 					self.elev.setDoorLamp(0)
 				else:
 					time.sleep(0.1)
