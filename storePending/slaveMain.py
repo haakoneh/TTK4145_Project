@@ -129,7 +129,7 @@ def runElevator(masterIP, port):
 #######################################################
 			elif masterMessage['msgType'] == 'pendingRequests':
 				print "\n\t\t\t****pendingRequests: {}".format(pendingRequests.list)
-				msg = msgParser.parseString(masterMessage)
+				msg = msgParser.parse(masterMessage)
 				print "msgtype == pending, masterMessage: {}\nmasterMessage parsed: {}".format(masterMessage, msg)
 				pendingRequests.list = msg
 				print "\n\t\t\t****pendingRequests: {}".format(pendingRequests.list)

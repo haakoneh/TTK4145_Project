@@ -75,6 +75,10 @@ class MessageParser():
         try:
             payload = json.loads(payload) # decode the JSON object
         
+        except:
+            pass
+
+        try:
             if payload['msgType'] in self.possible_responses:
                 # return self.possible_responses[payload['msgType']](payload)
                 return self.possible_responses[payload['msgType']](payload)
@@ -85,16 +89,16 @@ class MessageParser():
             print "Parsing returned none"
             return None
             
-    def parseString(self, payload):
-        try:       
-            if payload['msgType'] in self.possible_responses:
-                # return self.possible_responses[payload['msgType']](payload)
-                return self.possible_responses[payload['msgType']](payload)
-            else:
-                print 'Msg not valid!'
-                return None
-        except:
-            return None
+    # def parseString(self, payload):
+    #     try:       
+    #         if payload['msgType'] in self.possible_responses:
+    #             # return self.possible_responses[payload['msgType']](payload)
+    #             return self.possible_responses[payload['msgType']](payload)
+    #         else:
+    #             print 'Msg not valid!'
+    #             return None
+    #     except:
+    #         return None
 
     def parse_udp(self, payload):
         return str(payload['content'])
