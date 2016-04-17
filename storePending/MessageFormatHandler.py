@@ -128,6 +128,8 @@ class MessageParser():
         return int(payload['content'])
 
     def parsePending(self, payload):
+        if(payload == None):
+            return []
         request_temp = map(int, payload['content'].split(' '))
         request_list= [] 
         n = 0
@@ -137,6 +139,7 @@ class MessageParser():
             for j in xrange(i, requestSize*n):
                 simple_request.append(request_temp[j])
             request_list.append(simple_request)
+
         return request_list
 
     def parseRemovePending(self, payload):

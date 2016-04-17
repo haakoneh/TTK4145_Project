@@ -101,8 +101,8 @@ class SlaveHandler(Thread):
 		if(request not in pendingRequests):
 			pendingRequests.append(request)
 		self.lock.release()
-		
-	def removePendingGlobalRequst(self, request):
+
+	def removePendingGlobalRequest(self, request):
 		self.lock.acquire()
 		if(request in pendingRequests):
 			pendingRequests.remove(request)
@@ -207,7 +207,15 @@ class SlaveHandler(Thread):
 #######################################################################
 			elif message['msgType'] == 'removePending':
 				request = self.messageParser.parse(receivedString)
-				printString += "\n\t\tremovePending request: ".format(receivedString)
+				print '\033[93m' + "removePending".format(request) + '\033[0m'
+				printString += "\n\t\tremovePending request: ".format(request)
+				printString += "\n\t\tpendinglist before remove: {}\n\t\t".format(pendingRequests)
+
+				self.removePendingGlobalRequest(request)
+				self.broadcastPendingRequests()
+				
+				printString += "\n\t\tpendinglist after remove: {}\n\t\t".format(pendingRequests)
+
 
 #######################################################################
 

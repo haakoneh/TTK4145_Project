@@ -29,7 +29,7 @@ def sendState(elev, requestList, prevState, msgEncoder, msgBuffer):
 		state[1] = elev.getMotorDirection()
 	else:
 		state[1] = OUTPUT.MOTOR_STOP
-	state[2] = requestList.furthestRequestAway()	#furthest floor
+	state[2] = requestList.furthestRequestThisWay()	#furthest floor
 	
 	state += requestList.getGlobalFromLocal()
 
@@ -50,12 +50,19 @@ def stopAndRemoveRequests(elev, msgBuffer, msgEncoder, requestList):
 
 	hallRequests = requestList.removeAndReturnRequestsForDirection(elev.current_floor)
 
+
+
 	print "hallRequests: ", hallRequests
 
 	for request in hallRequests:
-		if request:
+		if request and request[0] != INPUT.BUTTON_IN:
 			print "sending remove message to master:\n\tmsg: {}".format(msgEncoder.encode("removePending", request))
-			msgBuffer.append(msgEncoder.encode("removePending", request))
+			msg = msgEncoder.encode("removePending", request)
+			if(msg not in msgBuffer):
+				msgBuffer.append(msgEncoder.encode("removePending", request))
+
+
+	print '\033[93m' + "in stopandremove\nmsgBuffer: {}".format(msgBuffer) + '\033[0m'
 
 	return msgBuffer
 
@@ -162,26 +169,14 @@ def runElevator(masterIP, port):
 		
 		elevPanel.updateLightsByRequestList(requestList.list, pendingRequests.list)
 
-		if floorStopTimer.getTimeFlag():
-			if floorStopTimer.isTimeOut(1):
-				printString += "\n" +   "Doors close"
-			else:
-				time.sleep(0.1)
-				continue
+		
 
 		#more requests ahead
-		if requestList.requestsAhead():
-			elev.setMotorDirection(elev.direction)
 		
-		#there are requests, but not ahead
-		elif requestList.isRequests():
-			elev.reverseElevDirection()
+
 
 		#no orders
-		else:
-			if(elev.getFloorSensorSignal() != -1):
-				elev.setMotorDirection(OUTPUT.MOTOR_STOP)
-				elev.current_floor = elev.getFloorSensorSignal()
+		
 
 		#we're at a floor, we check if we should stop here
 		if(elev.getFloorSensorSignal() != -1):
@@ -189,19 +184,19 @@ def runElevator(masterIP, port):
 				current_floor = elev.getFloorSensorSignal()
 				elev.setCurrentFloor(current_floor)
 				elev.setFloorIndicator(elev.getCurrentFloor())
-				# printString += "\n" +   "Trying to send state"
-				"""this is where we update and send state"""
 
+				"""this is where we update and send state"""
 				msgBuffer, prevState = sendState(elev, requestList, prevState, msgEncoder, msgBuffer)
 
 			if requestList.isRequestsatFloor(elev.current_floor):
-				if(requestList.isRequestAtFloorAndDirection(elev.current_floor)):
+				if(requestList.isRequestAtFloorAndDirection(elev.current_floor)) or elev.checkEndPoints() or requestList.furthestRequestThisWay() == elev.getCurrentFloor():
 
 					msgBuffer = stopAndRemoveRequests(elev, msgBuffer, msgEncoder, requestList)
 
 					openDoor(floorStopTimer, elev)
 
-				elif requestList.furthestRequestThisWay() == elev.getCurrentFloor():
+				elif requestList.furthestRequestThisWay() == elev.getCurrentFloor() or elev.checkEndPoints():
+
 					requestList.removeRequestsAtFloor(elev.getCurrentFloor())
 					openDoor(floorStopTimer, elev)
 
@@ -222,7 +217,29 @@ def runElevator(masterIP, port):
 		 	elev.stop()
 		 	break
 
-		time.sleep(0.01)
+		print "direction: {}\tlocal requests: {} pending: {}".format(elev.direction, requestList.list,pendingRequests.list)
+
+		if floorStopTimer.getTimeFlag():
+			if floorStopTimer.isTimeOut(1):
+				printString += "\n" +   "Doors close"
+			else:
+				time.sleep(0.1)
+				continue
+
+		if requestList.requestsAhead():
+			elev.setMotorDirection(elev.direction)
+		
+		#there are requests, but not ahead
+		elif requestList.isRequests():
+			elev.reverseElevDirection()
+			# elev.setMotorDirection(OUTPUT.MOTOR_STOP)
+			# elev.stop()
+			# elev.direction = OUTPUT.MOTOR_STOP
+		# else:
+		# 	if(elev.getFloorSensorSignal() != -1):
+		# 		elev.setMotorDirection(OUTPUT.MOTOR_STOP)
+		# 		elev.current_floor = elev.getFloorSensorSignal()
+		#time.sleep(0.01)
 
 
 	#runPythonScript("main.py")

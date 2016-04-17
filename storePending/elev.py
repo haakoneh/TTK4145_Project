@@ -137,7 +137,7 @@ class Elevator:
 				if self.getButtonSignal(buttonType, floor) == 1:
 					self.setButtonLamp(floor, buttonType, 1)
 
-	def  checkEndPoints(self):
+	def checkEndPoints(self):
 		floorCheck = self.getFloorSensorSignal()
 		if not 0 < floorCheck < INPUT.NUM_FLOORS - 1:
 			return 1

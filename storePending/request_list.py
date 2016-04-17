@@ -56,11 +56,11 @@ class Request_List:
 
 	def updateRequestFile(self):
 		"""Updates file whenever the request list is changed"""
-
-
 		with open(self.file, 'w') as f:
-		    for s in self.list:
-		        f.write(str(s) + '\n')	
+			if self.list != None:
+			    for s in self.list:
+			        f.write(str(s) + '\n')
+
 
 	def removeRequestByRequest(self, request):
 		""""""	
@@ -71,14 +71,18 @@ class Request_List:
 		else:
 			return 0
 
-	def removeRequest(self, floor, buttonType):
+	def removeRequest(self, buttonType, floor):
 		""""""
 		return self.removeRequestByRequest([buttonType, floor])
 
 	def removeRequestsAtFloor(self, floor):
+		requests = []
 		for buttonType in INPUT.BUTTON_TYPES:
-			self.removeRequest(floor, buttonType)
+			requests.append([buttonType,floor])
+			self.removeRequest(buttonType, floor)
+			print '\033[92m' + "removing request: ".format([buttonType,floor]) + '\033[0m'
 
+		return requests
 
 	def removeRequestsForDirection(self, floor):
 		if self.elevator.direction == OUTPUT.MOTOR_UP:
@@ -102,8 +106,26 @@ class Request_List:
 		else: return 0	
 
 	def removeAndReturnRequestsForDirection(self, floor):
+
 		hallRequests = []
-		if self.elevator.direction == OUTPUT.MOTOR_UP:
+
+		# if floor == self.furthestRequestThisWay() and self.elevator.getMotorDirection == OUTPUT.MOTOR_UP:
+		# 	buttonType = INPUT.BUTTON_DOWN
+		# elif floor == self.furthestRequestThisWay() and self.elevator.getMotorDirection == OUTPUT.MOTOR_DOWN:
+		# 	buttonType = INPUT.BUTTON_UP
+
+
+		print '\033[94m' + "Before furthest request away Check. Removing all requests" + '\033[0m'
+
+		if(self.furthestRequestThisWay() == self.elevator.getCurrentFloor()):
+			print '\033[94m' + "Print furthest request away. Removing all requests" + '\033[0m'
+			return self.removeRequestsAtFloor(floor)
+
+		if floor == 0 :
+			buttonType = INPUT.BUTTON_UP
+		elif floor == INPUT.NUM_FLOORS -1:
+			buttonType = INPUT.BUTTON_DOWN
+		elif self.elevator.direction == OUTPUT.MOTOR_UP:
 			buttonType = INPUT.BUTTON_UP
 		elif self.elevator.direction == OUTPUT.MOTOR_DOWN:
 			buttonType = INPUT.BUTTON_DOWN
@@ -148,6 +170,8 @@ class Request_List:
 			buttonType = INPUT.BUTTON_UP
 		elif self.elevator.direction == OUTPUT.MOTOR_DOWN:
 			buttonType = INPUT.BUTTON_DOWN
+		else:
+			buttonType = INPUT.BUTTON_IN
 	
 		request    = [buttonType, 		floor]
 		request_in = [INPUT.BUTTON_IN, 	floor]
@@ -170,6 +194,11 @@ class Request_List:
 				return False
 
 	def	requestsAhead(self):
+#########################3
+
+###########################3
+
+
 		if(self.elevator.direction == OUTPUT.MOTOR_DOWN):
 			for floor in range(0, self.elevator.current_floor):
 				if self.isRequestsatFloor(floor):
@@ -181,6 +210,16 @@ class Request_List:
 				if self.isRequestsatFloor(floor):
 					return 1
 			return 0
+		elif(self.elevator.direction == OUTPUT.MOTOR_STOP):
+			# for floor in range (self.elevator.current_floor, INPUT.NUM_FLOORS):
+			# 	if self.isRequestsatFloor(floor):
+			# 		return 1
+			# return 0
+			if self.list:
+				return 1
+			else:
+				return 0
+
 
 		else:
 			print "requestsAhead called without direction"
@@ -203,6 +242,30 @@ class Request_List:
 		return furthestAway
 
 	def furthestRequestThisWay(self):
+		if not self.list:
+			return self.elevator.getCurrentFloor()
+		furthestAway = -1
+
+		if self.elevator.direction == OUTPUT.MOTOR_UP :
+			for request in self.list:
+				if request[1] > furthestAway:
+					furthestAway = request[1]
+
+		elif self.elevator.direction == OUTPUT.MOTOR_DOWN :
+			furthestAway = INPUT.NUM_FLOORS + 1
+			for request in self.list:
+				if request[1] < furthestAway:
+					furthestAway = request[1]
+		else:
+			for request in self.list:
+				furthestAway = max(abs(request[1] - self.elevator.getCurrentFloor()), furthestAway)
+		print "Furthestaway: ", furthestAway
+		return furthestAway
+
+
+	def furthestRequestThisWayasdasd(self):
+
+
 		if not self.list:
 			return self.elevator.getCurrentFloor()
 
