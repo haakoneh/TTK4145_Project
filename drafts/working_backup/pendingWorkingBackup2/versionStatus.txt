@@ -1,0 +1,8 @@
+master sends pending list correctly
+slave receives correctly
+
+not implemented:
+    write to file properly
+    update lights
+
+master seems to receive "removepending" properly, but the parsing seems to fail
