@@ -6,12 +6,15 @@ from threading import Timer
 import thread
 
 
-def getMyIP():
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	s.connect(("gmail.com",80))
-	IP = s.getsockname()[0]
-	s.close()
-	return IP
+def getMyIP(): 
+	try: 
+		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		s.connect(("gmail.com",80))
+		IP = s.getsockname()[0]
+		s.close()
+		return IP
+	except:
+		return 'localhost'
 
 
 def runPythonScript(filename):
@@ -21,3 +24,9 @@ def runPythonScript(filename):
 
 def runSubprocess(filename):
 	check_output("gnome-terminal -e 'python " + str(filename) + "'", shell = True)
+
+def connectionLost(myIP):
+	if getMyIP() != myIP:
+		return True
+	else : 
+		return False

@@ -271,7 +271,8 @@ class Request_List:
 
 
 	def addListToRequestList(self, newList):
-		for item in newList:
-			if item not in self.list:
-				self.list.append(item)
-		self.updateRequestFile()
+		if newList:
+			for item in newList:
+				if item not in self.list:
+					self.list.append(item)
+			self.updateRequestFile()

@@ -36,8 +36,10 @@ class MasterSlaveSeeker():
 	#rename
 	def findMaster(self):
 		for i in range(0,5):
-
-			self.broadcastSock.sendto(self.bcMsgEncoded , ('255.255.255.255', self.udpPort))
+			try:
+				self.broadcastSock.sendto(self.bcMsgEncoded , ('255.255.255.255', self.udpPort))
+			except:
+				self.broadcastSock.sendto(self.bcMsgEncoded , ('localhost', self.udpPort))
 			time.sleep(0.1)
 			recvMsg, addr = self.udpSock.recvfrom(self.bufferSize)
 			decMsg = self.messageParser.parse(recvMsg)

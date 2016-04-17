@@ -73,16 +73,16 @@ def runElevator(masterIP, port):
 	global printString, prevPrintString
 
 	slave = slaveNetwork.Slave(masterIP, port)
-
+	elevIP = getMyIP()
 	elev = Elevator()
 	elevPanel = Elevator_Panel(elev)
 	elevPanel.turnOffAllLights()
 
 	requestList = Request_List(elev, 'requestListFile.txt')
 	globalRequestList = Request_List(elev, 'globalRequestListFile.txt')
-#New stuff relating to pendingRequsts####################
 	pendingRequests = Request_List(elev, 'pendingRequests.txt')
-#########################################################
+
+	requestList.addListToRequestList(pendingRequests.list)
 
 	floorStopTimer = TimerElev()
 	msgEncoder = MessageEncoder()
@@ -109,6 +109,8 @@ def runElevator(masterIP, port):
 	elev.stop()
 
 	while slave.alive:
+		if connectionLost(elevIP): break
+
 		printString = ""
 		
 		#check for request
