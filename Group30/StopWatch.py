@@ -5,7 +5,7 @@ class StopWatch:
 		self.time = datetime.now()
 		self.flag = 0
 
-	def resetTimer(self):
+	def reset(self):
 		self.time = datetime.now()
 		self.flag = 1
 

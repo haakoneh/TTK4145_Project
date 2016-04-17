@@ -39,6 +39,14 @@ class SlaveHandler(Thread):
 		for msgBuffer in allMsgBuffers:
 			allMsgBuffers[msgBuffer].append(msg)
 		
+	def appendToSelfBuffer(self, msg):
+		allMsgBuffers[str(self.getID())].append(msg)
+
+	def appendToSelectedBuffer(self, id, msg):
+		allMsgBuffers[str(id)].append(msg)
+
+		pass
+
 	def pingToSlave(self):
 		id_ping = self.messageEncoder.encode('elev_id', self.getID())
 		self.connection.send(id_ping)
@@ -86,6 +94,12 @@ class SlaveHandler(Thread):
 		msg = self.messageEncoder.encode('pendingRequests', pendingRequests)
 		self.msgToAllBuffers(str(msg))
 		self.lock.release()
+
+	def reassignPendingRequests(self):
+		self.lock.acquire()
+		for request in pendingRequests:
+			self.sendRequestToSlave(request)
+		self.lock.release()		
 
 	def updateID(self):
 		try:
@@ -155,14 +169,20 @@ class SlaveHandler(Thread):
 				request = self.messageParser.parse(receivedString)
 				self.removePendingGlobalRequest(request)
 				self.broadcastPendingRequests()
-				
+
+			elif message['msgType'] == 'powerLost':
+				cprint("Possible powerloss detected, reassigning pending requests.", BLUE)
+				self.removeSlave()
+				self.reassignPendingRequests()
+			else:
+				cprint("Unkown msgType. Raw message: {}".format(message))
 
 			if str(self.getID()) in allMsgBuffers:
 				if allMsgBuffers[str(self.getID())]:
-					sendstuff = allMsgBuffers[str(self.getID())].pop(0)
+					msgToSlave = allMsgBuffers[str(self.getID())].pop(0)
 
 					try:
-						self.connection.send(sendstuff)
+						self.connection.send(msgToSlave)
 					except:
 						cprint("Removing slave: {}".format(self.getID()), WARNING)
 						self.removeSlave()
@@ -176,8 +196,8 @@ class SlaveHandler(Thread):
 
 			time.sleep(0.1)
 
-def starter():
-	HOST, PORT = getMyIP(), 23432
+def starter(PORT):
+	HOST= getMyIP()
 
 	serverSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 	serverSocket.bind((HOST, PORT))

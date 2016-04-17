@@ -25,16 +25,16 @@ class SlaveElevator:
 		self.requestList.addListToRequestList(self.pendingRequests.list)
 
 		self.floorStopTimer = StopWatch()
-		self.moveTimer = StopWatch()
+		self.powerLossTimer = StopWatch()
 		self.msgEncoder = MessageEncoder()
 		self.msgParser = MessageParser()
 		self.msgBuffer = []
 		self.prevState = [-1, -1, -1]
 
 		self.prevFloor = -1
-		self.noneCounter = 0
+		self.receiveNoneCounter = 0
 
-		self.maxMoveTime = 10
+		self.powerOutTime = 10
 		
 
 		self.runElevator()
@@ -53,18 +53,17 @@ class SlaveElevator:
 		return self.state
 
 
-	def sendState(self):
-				
+	def sendState(self):	
 		if self.prevState != self.getCurrentState():
 			self.prevState = self.state
 			msg = self.msgEncoder.encode("state", self.prevState)
 			if not msg in self.msgBuffer:
 				self.msgBuffer.append(msg)
 
-			self.moveTimer.resetTimer()	
+			self.powerLossTimer.reset()	
 
 		elif not self.requestList.isRequests():
-			self.moveTimer.resetTimer()
+			self.powerLossTimer.reset()
 
 		return self.msgBuffer, self.prevState
 
@@ -82,8 +81,7 @@ class SlaveElevator:
 					self.msgBuffer.append(self.msgEncoder.encode("removePending", request))
 
 	def openDoor(self):
-
-		self.floorStopTimer.resetTimer()
+		self.floorStopTimer.reset()
 		self.elev.stop()
 		self.elev.setDoorLamp(1)
 
@@ -97,7 +95,7 @@ class SlaveElevator:
 		self.prevState = [self.elev.getCurrentFloor(), self.elev.getMotorDirection(), 0]
 		msg = self.msgEncoder.encode("state", self.prevState)
 		self.msgBuffer.append(msg)
-		self.moveTimer.resetTimer()
+		self.powerLossTimer.reset()
 		self.elev.stop()
 
 
@@ -105,31 +103,31 @@ class SlaveElevator:
 
 		self.startFunction()
 
-
 		while self.slave.alive:
+
 			if connectionLost(self.elevIP): 
 				cprint("Connection lost: break", FAIL)
 				self.elev.stop()
 				self.slave.handleLossOfMaster()
 				break
+
 			elif self.elev.getStopSignal():
 				cprint("Stop button pressed: break", GREEN)
 				self.elev.stop()
 				break
-			elif self.noneCounter >= 5:
-				cprint("Nonecounter reached limit: break", FAIL)
+
+			elif self.receiveNoneCounter >= 5:
+				cprint("receiveNoneCounter reached limit: break", FAIL)
 				break
 
-			while(self.moveTimer.isTimeOut(self.maxMoveTime)):
+			while(self.powerLossTimer.isTimeOut(self.powerOutTime)):
 				self.slave.send(self.msgEncoder.encode('powerLost', None))
-				cprint("Movetimer timeout: Most likely powerloss. Rebooting shortly", WARNING)
+				cprint("powerLossTimer timeout: Most likely powerloss. Rebooting shortly", WARNING)
 				if self.prevState != self.getCurrentState():
 					self.elev.stop()
 					break
 
 			self.requestList.addRequest()
-
-			"""This is where we send requests to master"""
 
 			globalRequest = self.requestList.getGlobalRequest()
 
@@ -144,7 +142,7 @@ class SlaveElevator:
 			if receivedMessage != None and receivedMessage != " ":
 				try:
 					masterMessage = json.loads(receivedMessage)
-					noneCounter = 0
+					receiveNoneCounter = 0
 				except:
 					cprint("json.loads error", WARNING)
 					self.slave.handleLossOfMaster()
@@ -157,9 +155,6 @@ class SlaveElevator:
 					if self.slave.getSlaveID() != int(masterMessage['content']):
 						self.slave.setSlaveID(int(masterMessage['content']))
 
-
-
-
 				elif masterMessage['msgType'] == 'pendingRequests':
 					msg = self.msgParser.parse(masterMessage)
 					self.updatePendingRequests(msg)
@@ -171,8 +166,10 @@ class SlaveElevator:
 					cprint("Unknown message".format(receivedMessage), WARNING)
 			else:
 			 	cprint("received none: ".format(receivedMessage), WARNING)
-			 	self.noneCounter += 1
-			
+			 	self.receiveNoneCounter += 1
+
+
+
 			self.elevPanel.updateLightsByRequestList(self.requestList.list, self.pendingRequests.list)
 
 			if(self.elev.getFloorSensorSignal() != INPUT.NO_FLOOR):	
@@ -204,4 +201,5 @@ class SlaveElevator:
 			elif self.requestList.isRequests():
 				self.elev.reverseElevDirection()
 
+		#we reboot the system if slave dies
 		runPythonScript("main.py")

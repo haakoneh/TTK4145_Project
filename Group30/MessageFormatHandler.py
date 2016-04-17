@@ -1,5 +1,5 @@
 import json
-
+from colors import *
 stateSize = 4
 requestSize = 2
 
@@ -72,11 +72,10 @@ class MessageParser():
 
     def parse(self, payload):
         try:
-            payload = json.loads(payload) # decode the JSON object
+            payload = json.loads(payload)
         
         except:
-            pass
-
+            cprint("Json failed with: ".format(payload), FAIL)
         try:
             if payload['msgType'] in self.possible_responses:
                 return self.possible_responses[payload['msgType']](payload)
@@ -84,7 +83,7 @@ class MessageParser():
                 print 'Msg not valid!'
                 return None
         except:
-            print "Parsing returned none"
+            cprint("Parsing failed with message: ".format(payload), FAIL)
             return None
 
     def parseUDP(self, payload):
