@@ -10,6 +10,7 @@ import select
 from MessageFormatHandler import *
 from MessageFormatHandler import MessageParser
 from cost import *
+from colors import *
 
 NR_Floors = 4
 
@@ -128,7 +129,8 @@ class SlaveHandler(Thread):
 	def removeSlave(self):
 		global printString
 		print printString
-		print "\t\t\tRemoving slave nr: {}".format(self.getID())
+
+		cprint("Removing slave nr: ".format(self.getID()), WARNING)
 		
 
 		self.lock.acquire()
@@ -136,16 +138,12 @@ class SlaveHandler(Thread):
 		slaveStateData = stateDict[str(self.getID())]
 		del stateDict[(str(self.slaveID))]
 		connections.remove(self.connection)
+
+		self.msgToAllBuffers(self.messageEncoder.encode("slaveLost", None))
+
 		self.lock.release()
-		print "\t\t\tRemoving should be complete"
-		
-			##assume that slave has already been removed
-			# print "\t\t\tRemoving of slave failed"
-			# if len(slaveStateData) > 3:
-			# 	for i in xrange(3, len(slaveStateData), 2):
-			# 		requestForNewSlave = [slaveStateData[i], slaveStateData[i + 1]]
-			# 		printString += self.sendRequestToSlave(requestForNewSlave, printString)
-		print "\t\t self slaveID set to -1"
+
+
 		self.slaveID = -1
 
 	def getMsgBuffer(self):
@@ -197,31 +195,20 @@ class SlaveHandler(Thread):
 
 				printString = self.sendRequestToSlave(request, printString)
 
-				#new stuff added here
-###################
 				print "adding pending request"
 				self.addPendingGlobalRequest(request)
 				print "adding pendingRequests to all buffers"
 				self.broadcastPendingRequests()
-###################
-#######################################################################
+
 			elif message['msgType'] == 'removePending':
 				request = self.messageParser.parse(receivedString)
-				print '\033[93m' + "removePending".format(request) + '\033[0m'
-				printString += "\n\t\tremovePending request: ".format(request)
-				printString += "\n\t\tpendinglist before remove: {}\n\t\t".format(pendingRequests)
+
+
 
 				self.removePendingGlobalRequest(request)
 				self.broadcastPendingRequests()
 				
-				printString += "\n\t\tpendinglist after remove: {}\n\t\t".format(pendingRequests)
 
-
-#######################################################################
-
-			printString += "\n" +   "Self IP: {}".format(getMyIP())#store this on setup instead
-			printString += "\n" + str(self.getID()) + " buffer contains: " + str(self.getMsgBuffer())
-			printString += "\n" "allMsgBuffers: {}".format(allMsgBuffers)
 
 			if str(self.getID()) in allMsgBuffers:
 				if allMsgBuffers[str(self.getID())]:

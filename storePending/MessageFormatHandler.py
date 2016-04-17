@@ -14,8 +14,8 @@ class MessageEncoder():
             'ping': self.encodePing,
             'udp': self.encode_udp,
             'pendingRequests': self.encodePending,
-            'removePending': self.encodeRemovePending
-	    # More key:values pairs are needed	
+            'removePending': self.encodeRemovePending,
+            'slaveLost': self.encodeSlaveLost
         }
     
     def encode(self, msgType, payload):
@@ -53,7 +53,9 @@ class MessageEncoder():
 
     def encodeRemovePending(self, payload):
         return ' '.join(str(e) for e in payload)
-        
+    
+    def encodeSlaveLost(self, payload):
+        return None
         
 
 
@@ -67,8 +69,7 @@ class MessageParser():
             'ping': self.parsePing,
             'udp': self.parse_udp,
             'pendingRequests': self.parsePending,
-            'removePending': self.parseRemovePending
-        # More key:values pairs are needed  
+            'removePending': self.parseRemovePending  
         }
 
     def parse(self, payload):

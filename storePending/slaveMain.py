@@ -8,6 +8,7 @@ import time
 import slaveNetwork
 from globalFunctions import *
 from MessageFormatHandler import *
+from colors import *
 networkAliveFlag = True
 
 printString = ""
@@ -156,6 +157,11 @@ def runElevator(masterIP, port):
 				updatePendingRequests(pendingRequests, pendingRequests.list)
 				print "\nAttempting to update pending requestfile"
 				pendingRequests.updateRequestFile()
+
+			elif masterMessage["msgType"] == "slaveLost":
+				cprint("slaveLost:\nRequestlist before merge: ".format(requestList.list), BLUE)
+				requestList.addListToRequestList(pendingRequests.list)
+				cprint("Requestlist after merge: ".format(requestList.list), BLUE)
 
 
 #######################################################

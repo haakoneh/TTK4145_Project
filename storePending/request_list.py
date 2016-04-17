@@ -109,12 +109,6 @@ class Request_List:
 
 		hallRequests = []
 
-		# if floor == self.furthestRequestThisWay() and self.elevator.getMotorDirection == OUTPUT.MOTOR_UP:
-		# 	buttonType = INPUT.BUTTON_DOWN
-		# elif floor == self.furthestRequestThisWay() and self.elevator.getMotorDirection == OUTPUT.MOTOR_DOWN:
-		# 	buttonType = INPUT.BUTTON_UP
-
-
 		print '\033[94m' + "Before furthest request away Check. Removing all requests" + '\033[0m'
 
 		if(self.furthestRequestThisWay() == self.elevator.getCurrentFloor()):
@@ -194,11 +188,6 @@ class Request_List:
 				return False
 
 	def	requestsAhead(self):
-#########################3
-
-###########################3
-
-
 		if(self.elevator.direction == OUTPUT.MOTOR_DOWN):
 			for floor in range(0, self.elevator.current_floor):
 				if self.isRequestsatFloor(floor):
@@ -264,8 +253,6 @@ class Request_List:
 
 
 	def furthestRequestThisWayasdasd(self):
-
-
 		if not self.list:
 			return self.elevator.getCurrentFloor()
 
@@ -281,3 +268,10 @@ class Request_List:
 				if request[1] < furthestAway:
 					furthestAway = request[1]
 		return furthestAway
+
+
+	def addListToRequestList(self, newList):
+		for item in newList:
+			if item not in self.list:
+				self.list.append(item)
+		self.updateRequestFile()
