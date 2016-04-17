@@ -2,7 +2,7 @@ from elev import Elevator
 from RequestList import RequestList 
 from channels import INPUT, OUTPUT
 import ElevatorPanel 
-from Timer import *
+from StopWatch import *
 import time
 import SlaveNetwork
 from GlobalFunctions import *
@@ -24,36 +24,47 @@ class SlaveElevator:
 
 		self.requestList.addListToRequestList(self.pendingRequests.list)
 
-		self.floorStopTimer = TimerElev()
+		self.floorStopTimer = StopWatch()
+		self.moveTimer = StopWatch()
 		self.msgEncoder = MessageEncoder()
 		self.msgParser = MessageParser()
 		self.msgBuffer = []
 		self.prevState = [-1, -1, -1]
+
 		self.prevFloor = -1
 		self.noneCounter = 0
+
+		self.maxMoveTime = 10
+		
 
 		self.runElevator()
 		
 
-
-	def sendState(self):
-		
-		state = [-1 , -1, -1]
-		state[0] = self.elev.getCurrentFloor()
+	def getCurrentState(self):
+		self.state = [-1 , -1, -1]
+		self.state[0] = self.elev.getFloorSensorSignal()
 
 		if(self.requestList.isRequests()):
-			state[1] = self.elev.getMotorDirection()
+			self.state[1] = self.elev.getMotorDirection()
 		else:
-			state[1] = OUTPUT.MOTOR_STOP
-		state[2] = self.requestList.furthestRequestThisWay()	#furthest floor
-		
-		state += self.requestList.getGlobalFromLocal()
+			self.state[1] = OUTPUT.MOTOR_STOP
+		self.state[2] = self.requestList.furthestRequestThisWay() 
 
-		if self.prevState != state:
-			self.prevState = state
+		return self.state
+
+
+	def sendState(self):
+				
+		if self.prevState != self.getCurrentState():
+			self.prevState = self.state
 			msg = self.msgEncoder.encode("state", self.prevState)
 			if not msg in self.msgBuffer:
 				self.msgBuffer.append(msg)
+
+			self.moveTimer.resetTimer()	
+
+		elif not self.requestList.isRequests():
+			self.moveTimer.resetTimer()
 
 		return self.msgBuffer, self.prevState
 
@@ -78,7 +89,7 @@ class SlaveElevator:
 
 	def startFunction(self):
 		self.elev.setMotorDirection(OUTPUT.MOTOR_UP)
-
+		
 		while self.elev.getFloorSensorSignal() == INPUT.NO_FLOOR:
 			time.sleep(0.1)
 				
@@ -86,7 +97,7 @@ class SlaveElevator:
 		self.prevState = [self.elev.getCurrentFloor(), self.elev.getMotorDirection(), 0]
 		msg = self.msgEncoder.encode("state", self.prevState)
 		self.msgBuffer.append(msg)
-
+		self.moveTimer.resetTimer()
 		self.elev.stop()
 
 
@@ -99,6 +110,7 @@ class SlaveElevator:
 			if connectionLost(self.elevIP): 
 				cprint("Connection lost: break", FAIL)
 				self.elev.stop()
+				self.slave.handleLossOfMaster()
 				break
 			elif self.elev.getStopSignal():
 				cprint("Stop button pressed: break", GREEN)
@@ -108,6 +120,12 @@ class SlaveElevator:
 				cprint("Nonecounter reached limit: break", FAIL)
 				break
 
+			while(self.moveTimer.isTimeOut(self.maxMoveTime)):
+				self.slave.send(self.msgEncoder.encode('powerLost', None))
+				cprint("Movetimer timeout: Most likely powerloss. Rebooting shortly", WARNING)
+				if self.prevState != self.getCurrentState():
+					self.elev.stop()
+					break
 
 			self.requestList.addRequest()
 
@@ -119,8 +137,6 @@ class SlaveElevator:
 				msg = self.msgEncoder.encode("request", globalRequest)
 				if not msg in self.msgBuffer:
 					self.msgBuffer.append(msg)
-					self.sendState()
-
 
 			receivedMessage = self.slave.receive()
 
