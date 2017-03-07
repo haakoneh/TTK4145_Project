@@ -1,9 +1,0 @@
-master sends pending list correctly
-slave receives correctly
-writes to file properly
-not implemented:
-    update lights
-    removePending
-
-
-master seems to receive "removepending" properly, but the parsing seems to fail

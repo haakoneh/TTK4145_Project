@@ -1,9 +1,0 @@
-master sends pending list correctly
-slave receives correctly
-writes to file properly
-update lights
-removePending
-
-not implemented:
-    loss of slave/master
-
